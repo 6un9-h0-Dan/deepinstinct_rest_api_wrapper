@@ -1,9 +1,10 @@
 # deepinstinct-rest-api-wrapper
 
 Deep Instinct v2.5 REST API Wrapper
-Compatability:
--Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
--Written and tested using a Python 3.8.3 instance installed by Anaconda
+
+Compatibility:
+* Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
+* Written and tested using a Python 3.8.3 instance installed by Anaconda
 
 Suggested Usage:
 1. Save this file as deepinstinct25.py in the same directory as your code
