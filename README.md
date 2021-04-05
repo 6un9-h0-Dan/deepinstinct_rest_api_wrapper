@@ -7,7 +7,7 @@ Compatibility:
 * Written and tested using a Python 3.8.3 instance installed by Anaconda
 
 Suggested Usage:
-1. Save this file as deepinstinct25.py in the same directory as your code
+1. Save deepinstinct25.py in the same directory as your own code
 2. Include "import deepinstinct25 as di" at the top of your code
 3. Set/modify the DI server name like this: di.fqdn = 'SERVER-NAME'
 4. Set/modify the DI REST API key like this: di.key = 'API-KEY'
