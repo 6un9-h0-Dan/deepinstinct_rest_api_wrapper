@@ -57,7 +57,7 @@ for tenant in tenants:
 # Convert tenants data to a Pandas data frame for easier manipulation and export
 tenants_df = pandas.DataFrame(tenants)
 
-# Soft the data frame alphabetically by msp name and then by tenant name
+# Sort the data frame alphabetically by msp name and then by tenant name
 tenants_df.sort_values(by=['msp_name', 'name'], inplace=True)
 
 # Export the data frame to disk in Excel format
