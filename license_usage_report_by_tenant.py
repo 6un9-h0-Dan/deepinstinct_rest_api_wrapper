@@ -1,3 +1,15 @@
+# Disclaimer:
+# This code is provided as an example of how to build code against and interact
+# with the Deep Instinct REST API. It is provided AS-IS/NO WARRANTY. It has
+# limited error checking and logging, and likely contains defects or other
+# deficiencies. Test thoroughly first, and use at your own risk. The API
+# Wrapper and associated samples are not Deep Instinct commercial products and 
+# are not officially supported, although he underlying REST API is. This means
+# that to report an issue to tech support you must remove the API Wrapper layer
+# and recreate the problem with a reproducible test case against the raw/pure
+# DI REST API.
+#
+
 import deepinstinct25 as di, pandas, datetime
 
 # Optional hardcoded config - if not provided, you'll be prompted at runtime
