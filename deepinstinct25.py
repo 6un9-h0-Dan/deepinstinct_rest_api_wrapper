@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-04-05
+# Last Updated: 2021-04-10
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -28,8 +28,9 @@
 
 # Import various libraries used by one or more method below.
 import requests, json, datetime, pandas, re, ipaddress
-# Note: If any of the above throw import errors, I recommend to search Google
-# for details on the appropriate package(s) to install via pip or otherwise.
+#If any of the above throw import errors, try running 'pip install library_name'
+#If that doesn't fix the problem I recommend to search Google for the error
+#that you are getting.
 
 
 # Export Device List to disk in Excel format
@@ -490,3 +491,25 @@ def delete_msp(msp_name):
         return 'MSP ' + str(msp_id) + ' ' + msp_name + ' cannot be deleted because only Hub-Admin can delete MSPs'
     else:
         return 'ERROR: Unexpected return code ' + str(response.status_code)
+
+# Remotely uninstall a device
+def remove_device(device, device_id_only=False):
+
+    #PROCESS INPUT
+    if device_id_only:
+        #the input was the actual device id
+        device_id = device
+    else:
+        #the input was a device dictionary; extract the device id from it
+        device_id = device['id']
+
+    #UNINSTALL THE DEVICE
+    request_url = f'https://{fqdn}/api/v1/devices/{device_id}/actions/remove'
+    headers = {'Authorization': key}
+    response = requests.post(request_url, headers=headers)
+
+    #RETURN TRUE/FALSE BASED ON WHETHER WE GOT THE EXPECTED RETURN CODE
+    if response.status_code == 204:
+        return True
+    else:
+        return False
