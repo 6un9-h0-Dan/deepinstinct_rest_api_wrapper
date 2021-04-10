@@ -32,7 +32,7 @@ now = datetime.datetime.utcnow()
 devices_to_remove = []
 
 # Inspect device data and build list of devices to be removed
-# In the nested for loops below, only devices which meet ALL criteria will be removed.
+# In the nested if blocks below, only devices which meet ALL criteria will be removed.
 # You'll need to adjust this area of the code to match your specific use case(s).
 # Open https://{fqdn}/api/v1/ in a web browser and reference the specification for
 # the 'DeviceList' model to see all available fields and possible values.
