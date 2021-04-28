@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-04-10
+# Last Updated: 2021-04-28
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -183,12 +183,15 @@ def export_policies():
 
 
 # Enable automatic upgrade setting in policies
-def enable_upgrades(platforms=['WINDOWS','MAC'], automatic_upgrade=True):
+def enable_upgrades(platforms=['WINDOWS','MAC'], automatic_upgrade=True, return_modified_policies_id_list=False):
     # Get list of policies
     policies = get_policies()
 
     # Establish a counter of how many policies were modified (used in return)
     modified_policy_counter = 0
+
+    # Establish a list of modified policy IDs
+    modified_policies_id_list = []
 
     # Static headers for all requests in this function
     headers = {'accept': 'application/json', 'Authorization': key}
@@ -210,13 +213,46 @@ def enable_upgrades(platforms=['WINDOWS','MAC'], automatic_upgrade=True):
                 request = requests.put(request_url, json=policy_data, headers=headers)
                 # Increment the counter of how many policies we have modified
                 modified_policy_counter += 1
+                modified_policies_id_list.append(policy['id'])
 
-    return str(modified_policy_counter) + ' policies modified to set automatic_upgrade to ' + str(automatic_upgrade)
+    return_string = str(modified_policy_counter) + ' policies modified to set automatic_upgrade to ' + str(automatic_upgrade)
+
+    if return_modified_policies_id_list:
+        print(return_string)
+        return modified_policies_id_list
+    else:
+        return return_string
 
 
 # Disable automatic upgrade setting in policies
-def disable_upgrades(platforms=['WINDOWS','MAC']):
-    return enable_upgrades(platforms=platforms, automatic_upgrade=False)
+def disable_upgrades(platforms=['WINDOWS','MAC'], return_modified_policies_id_list=False):
+    return enable_upgrades(platforms=platforms, automatic_upgrade=False, return_modified_policies_id_list=return_modified_policies_id_list)
+
+
+# Enables upgrades for a list of policy IDs
+def enable_upgrades_for_list_of_policy_ids(policy_ids, automatic_upgrade=True):
+
+    # Establish a counter of how many policies were modified (used in return)
+    modified_policy_counter = 0
+
+    # Static headers for all requests in this function
+    headers = {'accept': 'application/json', 'Authorization': key}
+
+    # Iterate through the poliocy ids provided
+    for policy_id in policy_ids:
+        request_url = f'https://{fqdn}/api/v1/policies/{policy_id}/data'
+        response = requests.get(request_url, headers=headers)
+        policy_data = response.json()
+        # Check if the upgrade setting needs changing
+        if policy_data['data']['automatic_upgrade'] != automatic_upgrade:
+            # If yes, set it to desired setting
+            policy_data['data']['automatic_upgrade'] = automatic_upgrade
+            # Write modified policy data back to server (saving change)
+            request = requests.put(request_url, json=policy_data, headers=headers)
+            # Increment the counter of how many policies we have modified
+            modified_policy_counter += 1
+
+    return str(modified_policy_counter) + ' policies modified to set automatic_upgrade to ' + str(automatic_upgrade)
 
 
 # Returns a list of all visible Tenants
