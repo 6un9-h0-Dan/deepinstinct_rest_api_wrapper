@@ -114,9 +114,9 @@ def unarchive_devices(device_ids):
 
 
 # Write Device Policy data to disk in MS Excel format.
-def export_policies():
+def export_policies(include_allow_deny_lists=True):
     # Get all policies from server, including auxilary data
-    policies = get_policies(include_policy_data=True, include_allow_deny_lists=True)
+    policies = get_policies(include_policy_data=True, include_allow_deny_lists=include_allow_deny_lists)
 
     # Divide the policies into platform-specific lists
     # --> This is done for purposes of cleaner/more usable exports, since
