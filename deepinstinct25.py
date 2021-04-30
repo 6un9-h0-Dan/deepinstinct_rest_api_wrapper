@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-04-28
+# Last Updated: 2021-04-30
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -549,3 +549,41 @@ def remove_device(device, device_id_only=False):
         return True
     else:
         return False
+
+
+# Return a list of events matching specified search parameters and/or minimum
+# event id. If neither are provided, all visible events are returned.
+def get_events(search={}, minimum_event_id=0):
+
+    #define HTTP headers for all requests in this method
+    headers = {'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': key}
+
+    #list to collect events
+    collected_events = []
+
+    #Note that the API method we are calling returns up to 50 events at a time,
+    #and we know we have all events when we get last_id=None back in the response
+
+    #loop until we have all the events
+    while minimum_event_id != None:
+        #calculate request url
+        request_url = f'https://{fqdn}/api/v1/events/search/{str(minimum_event_id)}'
+        #make request to server, store response
+        response = requests.post(request_url, headers=headers, json=search)
+        #check HTTP return code, and in case of error exit the method and return empty list
+        if response.status_code != 200:
+            return []
+        else:
+            #store the returned last_id value
+            minimum_event_id = response.json()['last_id']
+
+            #if we got a none-null last_id back
+            if minimum_event_id != None:
+                #then extract the events
+                events = response.json()['events']
+                #append the event(s) from this response to collected_devices
+                for event in events:
+                    collected_events.append(event)
+
+    #return the list of collected events
+    return collected_events
