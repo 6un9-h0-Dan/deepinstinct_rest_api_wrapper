@@ -581,7 +581,7 @@ def get_events(search={}, minimum_event_id=0):
             if minimum_event_id != None:
                 #then extract the events
                 events = response.json()['events']
-                #append the event(s) from this response to collected_devices
+                #append the event(s) from this response to collected_events
                 for event in events:
                     collected_events.append(event)
 
