@@ -26,21 +26,49 @@ while len(di.key) != 257:
 # THIS SECTION SHOWS A SERIES OF EXAMPLES OF HOW TO USE di.get_events TO GET
 # ALL OR SOME OF THE EVENTS VISIBLE TO THE PROVIDED API KEY FROM THE SERVER
 # --> Leave exactly 1 call to di.get_events uncommented
-# --> Reference the API documentation (https://fqdn/api/v1) for data on all
-#     available fields and values for the event search
 
-# Get all events (no filter)
-events = di.get_events()  #all events
+# All events
+events = di.get_events()
 
-# Get only events with event id > 1000
+# Example of how to filter on minimum event_id
 #events = di.get_events(minimum_event_id=1001)
 
-# Build a set of event search parameters, then use them along with a minimum
-# event id to get only events that match all provided criteria
+# Example of how to build a set of search search parameters
+# --> Reference API documentation (https://fqdn/api/v1) for full list of
+#     available field names and values.
+
 #search_parameters = {}
-#search_parameters['status'] = ['OPEN']
-#search_parameters['threat_severity'] = ['LOW', 'MODERATE']
-#events = di.get_events(minimum_event_id=101, search=search_parameters)
+#search_parameters['status'] = ['OPEN', 'CLOSED']
+#search_parameters['threat_severity'] = ['LOW', 'MODERATE', 'VERY_HIGH']
+#search_parameters['trigger'] = ['BRAIN', 'DDE_USAGE']
+#search_parameters['timestamp'] = {'from': '2021-05-01T15:35:11.333Z', 'to': '2021-05-03T15:35:11.333Z'}
+#search_parameters['insertion_timestamp'] = {'from': '2021-01-16T15:35:11.333Z', 'to': '2021-02-23T15:35:11.333Z'}
+#search_parameters['last_reoccurence'] = {'from': '2021-01-16T15:35:11.333Z', 'to': '2021-02-23T15:35:11.333Z'}
+#search_parameters['close_timestamp'] = {'from': '2021-01-17T15:35:11.333Z', 'to': '2021-02-17T15:35:11.333Z'}
+#search_parameters['close_trigger'] = ['NONE','BRAIN']
+#search_parameters['reoccurence_count'] = 7
+#search_parameters['last_action'] = ['FILE_UPLOADED_SUCCESSFULLY', 'FILE_UPLOADED_FAILED']
+#search_parameters['comment'] = 'Hello World'
+#search_parameters['msp_name'] = 'My MSP Name'
+#search_parameters['msp_id'] = 651
+#search_parameters['tenant_name'] = 'Patrick Lab'
+#search_parameters['tenant_id'] = 612
+#search_parameters['file_hash'] = '9e7878355f2481e338ea8162bebadb74e97cdf5cbc06e54b69215377fc82d30d'
+#search_parameters['file_type'] = ['EICAR', 'PE', 'DOC', 'ZIP', 'EXE', 'RAR', 'JAR', 'SWF']
+#search_parameters['file_archive_hash'] = '2cf6bb71013ce46eb9f9c5caf52aa400f76a679cf62407dbb245e87086714178'
+#search_parameters['path'] = 'c:\foo\bar.dll'
+#search_parameters['certificate_thumbprint'] = 'a3958ae522f3c54b878b20d7b0f63711e08666b2'
+#search_parameters['certificate_vendor_name'] = 'Google LLC'
+#search_parameters['deep_classification'] = ['RANSOMWARE', 'BACKDOOR', 'DROPPER']
+#search_parameters['file_status'] = ['UPLOADED', 'NOT_UPLOADED']
+#search_parameters['sandbox_status'] = ['NOT_READY_TO_GENERATE', 'READY_TO_GENERATE']
+#search_parameters['file_size'] = 12345
+#events = di.get_events(search=search_parameters)
+
+# Example of combining search parameters plus minimum event_id
+#TODO: Build search_parameters dictionary based upon example above
+#events = di.get_events(search=search_parameters, minimum_event_id=5001)
+
 # ==============================================================================
 
 if len(events) > 0:
