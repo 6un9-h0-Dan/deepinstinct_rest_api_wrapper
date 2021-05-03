@@ -34,9 +34,11 @@ events = di.get_events()
 #events = di.get_events(minimum_event_id=1001)
 
 # Example of how to build a set of search search parameters
+# --> All provided parameters must match (AND operation, not OR)
+# --> Event search is exact match only (no regex/etc) with exception of timestamp
+#     fields which support a range with 'from' (minimum) and 'to' (maximum)
 # --> Reference API documentation (https://fqdn/api/v1) for full list of
 #     available field names and values.
-
 #search_parameters = {}
 #search_parameters['status'] = ['OPEN', 'CLOSED']
 #search_parameters['threat_severity'] = ['LOW', 'MODERATE', 'VERY_HIGH']
