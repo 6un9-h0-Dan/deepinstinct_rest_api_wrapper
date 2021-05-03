@@ -43,6 +43,7 @@ events = di.get_events()
 #search_parameters['status'] = ['OPEN', 'CLOSED']
 #search_parameters['threat_severity'] = ['LOW', 'MODERATE', 'VERY_HIGH']
 #search_parameters['trigger'] = ['BRAIN', 'DDE_USAGE']
+#search_parameters['type'] = ['STATIC_ANALYSIS', 'SCRIPT_CONTROL_COMMAND', 'SCRIPT_CONTROL_PATH', 'RANSOMWARE_FILE_ENCRYPTION', 'SUSPICIOUS_SCRIPT_EXCECUTION', 'MALICIOUS_POWERSHELL_COMMAND_EXECUTION', 'SUSPICIOUS_POWERSHELL_COMMAND_EXECUTION']
 #search_parameters['timestamp'] = {'from': '2021-05-01T15:35:11.333Z', 'to': '2021-05-03T15:35:11.333Z'}
 #search_parameters['insertion_timestamp'] = {'from': '2021-01-16T15:35:11.333Z', 'to': '2021-02-23T15:35:11.333Z'}
 #search_parameters['last_reoccurence'] = {'from': '2021-01-16T15:35:11.333Z', 'to': '2021-02-23T15:35:11.333Z'}
