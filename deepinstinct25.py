@@ -585,17 +585,22 @@ def get_events(search={}, minimum_event_id=0):
     return collected_events
 
 #Return a list of all visible Device Groups
-def get_groups():
+def get_groups(exclude_default_groups=False):
     # Calculate headers and URL
     headers = {'accept': 'application/json', 'Authorization': key}
     request_url = f'https://{fqdn}/api/v1/groups/'
-
     # Get Device Groups from server
     response = requests.get(request_url, headers=headers)
-
-    #Check resposne code
+    #Check response code
     if response.status_code == 200:
         groups = response.json() #convert to Python list
+        #optionally remove the default groups before returning the data
+        if exclude_default_groups:
+            #Note [:]: syntax on line below to make a copy of list before iterating over it sincer we're going to be removing elements, as per https://stackoverflow.com/questions/7210578/why-does-list-remove-not-behave-as-one-might-expect
+            for group in groups[:]:
+                if group['is_default_group']:
+                    groups.remove(group)
         return groups
     else:
-        return [] #in case of error getting data, return empty list
+        #in case of error getting data, return empty list
+        return []
