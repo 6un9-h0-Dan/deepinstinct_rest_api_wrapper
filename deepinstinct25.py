@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-04-30
+# Last Updated: 2021-05-11
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -339,15 +339,11 @@ def get_device_ids(search_list, regex_hostname_search=False, cidr_search=False):
 
 # Translate a Device Group name into a Device Group IP
 def get_group_id(group_name):
-    # Calculate headers and URL
-    headers = {'accept': 'application/json', 'Authorization': key}
-    request_url = f'https://{fqdn}/api/v1/groups/'
 
-    # Get Device Groups from server
-    response = requests.get(request_url, headers=headers)
-    groups = response.json() #convert to Python list
+    # Get the groups from the server
+    groups = get_groups()
 
-    #Iterate through groups looking for match on group name
+    #Iterate through the groups looking for match on group name
     for group in groups:
         if group['name'].lower() == group_name.lower():  #case-insensitive
             return group['id'] #match was found; return the id of that match
@@ -587,3 +583,19 @@ def get_events(search={}, minimum_event_id=0):
 
     #return the list of collected events
     return collected_events
+
+#Return a list of all visible Device Groups
+def get_groups():
+    # Calculate headers and URL
+    headers = {'accept': 'application/json', 'Authorization': key}
+    request_url = f'https://{fqdn}/api/v1/groups/'
+
+    # Get Device Groups from server
+    response = requests.get(request_url, headers=headers)
+
+    #Check resposne code
+    if response.status_code == 200:
+        groups = response.json() #convert to Python list
+        return groups
+    else:
+        return [] #in case of error getting data, return empty list
