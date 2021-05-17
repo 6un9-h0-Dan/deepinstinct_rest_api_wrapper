@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-05-11
+# Last Updated: 2021-05-17
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -591,7 +591,7 @@ def get_groups(exclude_default_groups=False):
     request_url = f'https://{fqdn}/api/v1/groups/'
     # Get Device Groups from server
     response = requests.get(request_url, headers=headers)
-    #Check response code
+    # Check response code
     if response.status_code == 200:
         groups = response.json() #convert to Python list
         #optionally remove the default groups before returning the data
@@ -604,3 +604,18 @@ def get_groups(exclude_default_groups=False):
     else:
         #in case of error getting data, return empty list
         return []
+
+#Gets a single device
+def get_device(device_id):
+    # Calculate headers and URL
+    headers = {'accept': 'application/json', 'Authorization': key}
+    request_url = f'https://{fqdn}/api/v1/devices/{device_id}'
+    # Get data on the requested device ID from the server
+    response = requests.get(request_url, headers=headers)
+    # Check response code
+    if response.status_code == 200:
+        device = response.json() #convert to Python list
+        return device
+    else:
+        #in case of error getting data, return None
+        return None
