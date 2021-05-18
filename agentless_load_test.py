@@ -1,3 +1,12 @@
+# Disclaimer:
+# This code is provided as an example of how to build code against and interact
+# with the Deep Instinct Agentless Connector over REST API. It is provided
+# AS-IS/NO WARRANTY. It has limited error checking and logging, and likely 
+# contains defects or other deficiencies. Test thoroughly first, and use at your 
+# own risk. This sample is not a Deep Instinct commercial product and is not
+# officially supported, although the API that it calls is.
+#
+
 import deepinstinctagentless as di, time, json
 
 #CONFIGURATION
