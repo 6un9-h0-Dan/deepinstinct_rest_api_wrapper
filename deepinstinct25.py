@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-05-17
+# Last Updated: 2021-05-21
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -27,7 +27,7 @@
 #
 
 # Import various libraries used by one or more method below.
-import requests, json, datetime, pandas, re, ipaddress
+import requests, json, datetime, pandas, re, ipaddress, time
 #If any of the above throw import errors, try running 'pip install library_name'
 #If that doesn't fix the problem I recommend to search Google for the error
 #that you are getting.
@@ -283,17 +283,29 @@ def get_devices():
     # device id returned. We will know we have all devices visible to our API
     # key when we get last_id=None in a response.
 
+    error_count = 0
     # COLLECT DATA
-    while last_id != None: #loop until we have all visible devices
+    while last_id != None and error_count < 10: #loop until all visible devices have been collected
         #calculate URL for request
         request_url = f'https://{fqdn}/api/v1/devices?after_device_id={last_id}'
         #make request, store response
         response = requests.get(request_url, headers=headers)
-        response = response.json() #convert to Python list
-        last_id = response['last_id'] #save returned last_id for reuse on next request
-        devices = response['devices'] #extract devices from response
-        for device in devices: #iterate through the list of devices
-            collected_devices.append(device) #add to collected devices
+        if response.status_code == 200:
+            response = response.json() #convert to Python list
+            if 'last_id' in response:
+                last_id = response['last_id'] #save returned last_id for reuse on next request
+            else: #added this to handle issue where some server versions fail to return last_id on final batch of devices
+                last_id = None
+            if 'devices' in response:
+                devices = response['devices'] #extract devices from response
+                for device in devices: #iterate through the list of devices
+                    collected_devices.append(device) #add to collected devices
+        else:
+            print('WARNING: Unexpected return code', response.status_code,
+            'on request to\n', request_url, '\nwith headers\n', headers)
+            error_count += 1  #increment error counter
+            time.sleep(10) #wait before trying request again
+
     # When while loop exists, we know we have collected all visible data
 
     # RETURN COLLECTED DATA
@@ -591,7 +603,7 @@ def get_groups(exclude_default_groups=False):
     request_url = f'https://{fqdn}/api/v1/groups/'
     # Get Device Groups from server
     response = requests.get(request_url, headers=headers)
-    # Check response code
+    #Check response code
     if response.status_code == 200:
         groups = response.json() #convert to Python list
         #optionally remove the default groups before returning the data
