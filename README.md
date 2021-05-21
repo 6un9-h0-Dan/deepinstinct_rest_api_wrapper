@@ -11,7 +11,7 @@ Compatibility:
 Suggested Usage:
 
 1. Save deepinstinct*.py in the same directory as your own code
-2. Depending upon which version of the Deep Instinct server you are interacting with, include one of the following at the top of your code:
+2. Depending upon which version of the Deep Instinct D-Appliance or Deep Instinct Agentless Connector you are interacting with, include one of the following at the top of your code:
    'import deepinstinct30 as di'
    or
    'import deepinstinct25 as di'
