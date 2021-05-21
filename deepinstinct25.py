@@ -1,5 +1,5 @@
 # Deep Instinct v2.5 REST API Wrapper
-# Patrick Van Zandt, Senior Professional Services Engineer, Deep Instinct
+# Patrick Van Zandt, Principal Professional Services Engineer, Deep Instinct
 # Last Updated: 2021-05-21
 #
 # Compatibility:
