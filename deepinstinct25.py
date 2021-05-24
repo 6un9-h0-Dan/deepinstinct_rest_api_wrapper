@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Principal Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-05-21
+# Last Updated: 2021-05-24
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -290,7 +290,9 @@ def get_devices():
         request_url = f'https://{fqdn}/api/v1/devices?after_device_id={last_id}'
         #make request, store response
         response = requests.get(request_url, headers=headers)
-        if response.status_code == 200:
+        if response.status_code == 200: #this means successful query to server
+            error_count = 0 #reset error_count to 0
+            print('INFO:', request_url, 'returned', response.status_code)
             response = response.json() #convert to Python list
             if 'last_id' in response:
                 last_id = response['last_id'] #save returned last_id for reuse on next request
@@ -301,9 +303,10 @@ def get_devices():
                 for device in devices: #iterate through the list of devices
                     collected_devices.append(device) #add to collected devices
         else:
-            print('WARNING: Unexpected return code', response.status_code,
-            'on request to\n', request_url, '\nwith headers\n', headers)
             error_count += 1  #increment error counter
+            print('WARN: Unexpected return code', response.status_code,
+            'on request to\n', request_url, '\nwith headers\n', headers,
+            '\nNew error_count is', error_count)
             time.sleep(10) #wait before trying request again
 
     # When while loop exists, we know we have collected all visible data
