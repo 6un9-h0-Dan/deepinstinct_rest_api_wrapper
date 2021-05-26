@@ -89,9 +89,16 @@ if len(events) > 0:
     events_df = pandas.DataFrame(events)
     # Sort the data frame by event id
     events_df.sort_values(by=['id'], inplace=True)
+
     # Export the data frame to disk in Excel format
-    file_name = f'events_{di.fqdn}_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
-    events_df.to_excel(file_name, index=False)
-    print('\nINFO:', len(events), 'events were exported to disk as', file_name)
-else:
+
+    # Calculate folder and file name
+    folder_name = di.create_export_folder()
+    file_name = f'events_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
+
+    # Write data to disk
+    events_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(events), 'events were exported to disk as:', f'{folder_name}/{file_name}')
+
+else:  #No events were found
     print('No events were found on the server')

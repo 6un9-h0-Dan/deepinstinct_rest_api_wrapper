@@ -27,7 +27,7 @@
 #
 
 # Import various libraries used by one or more method below.
-import requests, json, datetime, pandas, re, ipaddress, time
+import requests, json, datetime, pandas, re, ipaddress, time, os
 #If any of the above throw import errors, try running 'pip install library_name'
 #If that doesn't fix the problem I recommend to search Google for the error
 #that you are getting.
@@ -41,12 +41,14 @@ def export_devices(include_deactivated=False):
     devices_df = pandas.DataFrame(devices)
     #calculate timestamp
     timestamp = datetime.datetime.today().strftime('%Y-%m-%d_%H.%M')
+    #calculate folder name
+    folder_name = create_export_folder()
     #calculate file name
-    file_name = f'device_list_{fqdn}_{timestamp}.xlsx'
+    file_name = f'device_list_{timestamp}.xlsx'
     #write data to disk
-    devices_df.to_excel(file_name, index=False)
+    devices_df.to_excel(f'{folder_name}/{file_name}', index=False)
     #return confirmation message
-    return (str(len(devices)) + ' devices written to ' + file_name)
+    return ('INFO: ' + str(len(devices)) + f' devices written to {folder_name}/{file_name}')
 
 
 # Accepts a list of (exact hostnames | hostname regex patterns | CIDRs) and
@@ -154,32 +156,32 @@ def export_policies(include_allow_deny_lists=True):
     return_value = []
 
     # Export data to disk
-    file_name = f'windows_policies_{fqdn}_{timestamp}.xlsx'
-    windows_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(windows_policies)) + ' policies written to ' + file_name)
 
-    file_name = f'mac_policies.xlsx_{fqdn}_{timestamp}.xlsx'
-    mac_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(mac_policies)) + ' policies written to ' + file_name)
+    folder_name = create_export_folder()
 
-    file_name = f'ios_policies.xlsx_{fqdn}_{timestamp}.xlsx'
-    ios_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(ios_policies)) + ' policies written to ' + file_name)
+    file_name = f'windows_policies_{timestamp}.xlsx'
+    windows_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(windows_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'android_policies_{fqdn}_{timestamp}.xlsx'
-    android_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(android_policies)) + ' policies written to ' + file_name)
+    file_name = f'mac_policies.xlsx_{timestamp}.xlsx'
+    mac_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(mac_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'chrome_policies_{fqdn}_{timestamp}.xlsx'
-    chrome_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(chrome_policies)) + ' policies written to ' + file_name)
+    file_name = f'ios_policies.xlsx_{timestamp}.xlsx'
+    ios_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(ios_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'network_agentless_policies_{fqdn}_{timestamp}.xlsx'
-    network_agentless_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(network_agentless_policies)) + ' policies written to ' + file_name)
+    file_name = f'android_policies_{timestamp}.xlsx'
+    android_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(android_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    # Return the collected strings with specifics of what was exported
-    return return_value
+    file_name = f'chrome_policies_{timestamp}.xlsx'
+    chrome_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(chrome_policies), 'policies written to', f'{folder_name}/{file_name}')
+
+    file_name = f'network_agentless_policies_{timestamp}.xlsx'
+    network_agentless_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(network_agentless_policies), 'policies written to', f'{folder_name}/{file_name}')
 
 
 # Enable automatic upgrade setting in policies
@@ -692,3 +694,13 @@ def unarchive_events(ids, suspicious=False, input_is_ids_only=True):
 #unhides a list of suspicious event ids from the GUI and REST API
 def unarchive_suspicious_events(ids, input_is_ids_only=True):
     return unarchive_events(ids=ids, suspicious=True, input_is_ids_only=input_is_ids_only)
+
+
+#allows organization of exported data by server-specific folders
+def create_export_folder():
+    exported_data_folder_name = f'exported_data_from_{fqdn}'
+    # Check if a folder already exists for data exports from this server
+    if not os.path.exists(exported_data_folder_name):
+        # ...If not, then create it
+        os.makedirs(exported_data_folder_name)
+    return exported_data_folder_name
