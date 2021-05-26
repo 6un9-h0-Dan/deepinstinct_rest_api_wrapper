@@ -1,6 +1,6 @@
 # ***DRAFT*** Deep Instinct v3.0 REST API Wrapper ***DRAFT***
 # Patrick Van Zandt, Principal Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-05-21
+# Last Updated: 2021-05-26
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 3.0.0.0
