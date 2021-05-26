@@ -10,7 +10,17 @@
 # DI REST API.
 #
 
-import deepinstinct25 as di, pandas, datetime
+import pandas, datetime
+
+# Prompt use for D-Appliance Version, validate input, then import appropriate
+# version of the REST API Wrapper
+di_version = ''
+while di_version not in ['3.0', '2.5']:
+    di_version = input('DI Server Version [3.0 | 2.5]? ')
+if di_version == '3.0':
+    import deepinstinct30 as di
+else:
+    import deepinstinct25 as di
 
 # Optional hardcoded config - if not provided, you'll be prompted at runtime
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
@@ -82,6 +92,6 @@ if len(events) > 0:
     # Export the data frame to disk in Excel format
     file_name = f'events_{di.fqdn}_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
     events_df.to_excel(file_name, index=False)
-    print('Data was exported to disk as', file_name)
+    print('\nINFO:', len(events), 'events were exported to disk as', file_name)
 else:
     print('No events were found on the server')

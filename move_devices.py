@@ -10,36 +10,48 @@
 # DI REST API.
 #
 
-import deepinstinct25 as di
+# Prompt use for D-Appliance Version, validate input, then import appropriate
+# version of the REST API Wrapper
+di_version = ''
+while di_version not in ['3.0', '2.5']:
+    di_version = input('DI Server Version [3.0 | 2.5]? ')
+if di_version == '3.0':
+    import deepinstinct30 as di
+else:
+    import deepinstinct25 as di
 
-#CONFIGURATION
-
-#Server name and API key
+# Optional hardcoded config - if not provided, you'll be prompted at runtime
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
-di.key= 'API-KEY'
+di.key = 'API-KEY'
 
-#Name of Device Group to move the devices to
-device_group_name = 'My Prevention Group'
+# Validate config and prompt if not provided above
+while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
+    di.fqdn = input('FQDN of DI Server? ')
+while len(di.key) != 257:
+    di.key = input('API Key? ')
 
-#Build a Python list of the hostnames to move
-device_list = []
-device_list.append('hostname1')
-device_list.append('hostname2')
-device_list.append('hostname3')
+#Prompt for Device Group Name
+device_group_name = input('Device Group Name? ')
 
-#RUNTIME
+#Prompt for hostname(s)
+device_name_list = []
+device_name = None
+while device_name != '':
+    device_name = input('Enter hostname to add, or press enter to exit: ')
+    if device_name != '':
+        device_name_list.append(device_name)
 
 #Print preview of the move to the console
-print(device_list, '\nwill be moved to\n', device_group_name, '\non server\n', di.fqdn, '\nusing API key\n', di.key, '\n')
+print('\nDevice(s) with hostname(s)\n',device_name_list, '\nwill be moved to\n', device_group_name, '\non server\n', di.fqdn, '\nusing API key\n', di.key, '\n')
 
 #Ask user to confirm
-user_input = input('To execute the above change, type YES in all caps and press return ')
+user_input = input('To execute the above change, type YES in all caps and press return: ')
 
 #Check user response
 if user_input == 'YES':
-    print('Sending request to server')
+    print('\nSending request to server')
     #Call move_devices to execute the change
-    result = di.move_devices(device_list, device_group_name)
+    result = di.move_devices(device_name_list, device_group_name)
     #Check results and print summary to console if successful
     if result != None:
         #change was sucessful. print details to console
