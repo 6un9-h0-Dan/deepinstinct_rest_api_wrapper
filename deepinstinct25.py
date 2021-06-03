@@ -292,7 +292,7 @@ def get_devices():
         response = requests.get(request_url, headers=headers)
         if response.status_code == 200: #this means successful query to server
             error_count = 0 #reset error_count to 0
-            print('INFO:', request_url, 'returned', response.status_code)
+            #print('INFO:', request_url, 'returned', response.status_code)
             response = response.json() #convert to Python list
             if 'last_id' in response:
                 last_id = response['last_id'] #save returned last_id for reuse on next request
