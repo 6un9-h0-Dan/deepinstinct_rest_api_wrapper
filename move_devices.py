@@ -27,7 +27,7 @@ di.key = 'API-KEY'
 # Validate config and prompt if not provided above
 while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
     di.fqdn = input('FQDN of DI Server? ')
-while len(di.key) != 257:
+while di.key in ('API-KEY', ''):
     di.key = input('API Key? ')
 
 #Prompt for Device Group Name
