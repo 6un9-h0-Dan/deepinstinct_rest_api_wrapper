@@ -1,6 +1,6 @@
 # ***DRAFT*** Deep Instinct v3.0 REST API Wrapper ***DRAFT***
 # Patrick Van Zandt, Principal Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-05-26
+# Last Updated: 2021-06-07
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 3.0.0.0
@@ -151,9 +151,6 @@ def export_policies(include_allow_deny_lists=True):
 
     # Get current timestamp and format for usage in exported filenames
     timestamp = datetime.datetime.today().strftime('%Y-%m-%d_%H.%M')
-
-    # List to collect human-readable summary of the results
-    return_value = []
 
     # Export data to disk
 
