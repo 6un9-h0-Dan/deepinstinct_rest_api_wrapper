@@ -1,6 +1,6 @@
 # Deep Instinct v2.5 REST API Wrapper
 # Patrick Van Zandt, Principal Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-05-24
+# Last Updated: 2021-06-07
 #
 # Compatibility:
 # -Designed for and tested using Deep Instinct D-Appliance version 2.5.0.1
@@ -27,7 +27,7 @@
 #
 
 # Import various libraries used by one or more method below.
-import requests, json, datetime, pandas, re, ipaddress, time
+import requests, json, datetime, pandas, re, ipaddress, time, os
 #If any of the above throw import errors, try running 'pip install library_name'
 #If that doesn't fix the problem I recommend to search Google for the error
 #that you are getting.
@@ -41,12 +41,14 @@ def export_devices():
     devices_df = pandas.DataFrame(devices)
     #calculate timestamp
     timestamp = datetime.datetime.today().strftime('%Y-%m-%d_%H.%M')
+    #calculate folder name
+    folder_name = create_export_folder()
     #calculate file name
-    file_name = f'device_list_{fqdn}_{timestamp}.xlsx'
+    file_name = f'device_list_{timestamp}.xlsx'
     #write data to disk
-    devices_df.to_excel(file_name, index=False)
+    devices_df.to_excel(f'{folder_name}/{file_name}', index=False)
     #return confirmation message
-    return (str(len(devices)) + ' devices written to ' + file_name)
+    return ('INFO: ' + str(len(devices)) + f' devices written to {folder_name}/{file_name}')
 
 
 # Accepts a list of (exact hostnames | hostname regex patterns | CIDRs) and
@@ -59,7 +61,12 @@ def move_devices(search_list, group_name, regex_hostname_search=False, cidr_sear
     # Lookup to get Device Group ID
     group_id = get_group_id(group_name=group_name)
     # Execute the move
-    return add_devices_to_group(device_ids=device_ids, group_id=group_id) + ' ' + group_name
+    result = add_devices_to_group(device_ids=device_ids, group_id=group_id)
+    if result != None:
+        return result + ' ' + group_name
+    else:
+        #something went wrong
+        return none
 
 
 # Accepts list of hostnames, removes any explicit/manual group assignment.
@@ -150,36 +157,33 @@ def export_policies(include_allow_deny_lists=True):
     # Get current timestamp and format for usage in exported filenames
     timestamp = datetime.datetime.today().strftime('%Y-%m-%d_%H.%M')
 
-    # List to collect human-readable summary of the results
-    return_value = []
-
     # Export data to disk
-    file_name = f'windows_policies_{fqdn}_{timestamp}.xlsx'
-    windows_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(windows_policies)) + ' policies written to ' + file_name)
 
-    file_name = f'mac_policies.xlsx_{fqdn}_{timestamp}.xlsx'
-    mac_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(mac_policies)) + ' policies written to ' + file_name)
+    folder_name = create_export_folder()
 
-    file_name = f'ios_policies.xlsx_{fqdn}_{timestamp}.xlsx'
-    ios_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(ios_policies)) + ' policies written to ' + file_name)
+    file_name = f'windows_policies_{timestamp}.xlsx'
+    windows_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(windows_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'android_policies_{fqdn}_{timestamp}.xlsx'
-    android_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(android_policies)) + ' policies written to ' + file_name)
+    file_name = f'mac_policies.xlsx_{timestamp}.xlsx'
+    mac_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(mac_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'chrome_policies_{fqdn}_{timestamp}.xlsx'
-    chrome_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(chrome_policies)) + ' policies written to ' + file_name)
+    file_name = f'ios_policies.xlsx_{timestamp}.xlsx'
+    ios_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(ios_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'network_agentless_policies_{fqdn}_{timestamp}.xlsx'
-    network_agentless_policies_df.to_excel(file_name, index=False)
-    return_value.append(str(len(network_agentless_policies)) + ' policies written to ' + file_name)
+    file_name = f'android_policies_{timestamp}.xlsx'
+    android_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(android_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    # Return the collected strings with specifics of what was exported
-    return return_value
+    file_name = f'chrome_policies_{timestamp}.xlsx'
+    chrome_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(chrome_policies), 'policies written to', f'{folder_name}/{file_name}')
+
+    file_name = f'network_agentless_policies_{timestamp}.xlsx'
+    network_agentless_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
+    print('INFO:', len(network_agentless_policies), 'policies written to', f'{folder_name}/{file_name}')
 
 
 # Enable automatic upgrade setting in policies
@@ -634,3 +638,12 @@ def get_device(device_id):
     else:
         #in case of error getting data, return None
         return None
+
+#allows organization of exported data by server-specific folders
+def create_export_folder():
+    exported_data_folder_name = f'exported_data_from_{fqdn}'
+    # Check if a folder already exists for data exports from this server
+    if not os.path.exists(exported_data_folder_name):
+        # ...If not, then create it
+        os.makedirs(exported_data_folder_name)
+    return exported_data_folder_name
