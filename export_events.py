@@ -29,7 +29,7 @@ di.key = 'API-KEY'
 # Validate config and prompt if not provided above
 while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
     di.fqdn = input('FQDN of DI Server? ')
-while len(di.key) != 257:
+while di.key == 'API-KEY':
     di.key = input('API Key? ')
 
 # ==============================================================================
@@ -39,6 +39,7 @@ while len(di.key) != 257:
 
 # All events
 events = di.get_events()
+#events = di.get_all_events(max_event_id=9999) #use alternate method to include Script Control events if desired
 
 # Example of how to filter on minimum event_id
 #events = di.get_events(minimum_event_id=1001)
