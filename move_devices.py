@@ -25,7 +25,7 @@ di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
 di.key = 'API-KEY'
 
 # Validate config and prompt if not provided above
-while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
+while di.fqdn in ('SERVER-NAME.customers.deepinstinctweb.com', ''):
     di.fqdn = input('FQDN of DI Server? ')
 while di.key in ('API-KEY', ''):
     di.key = input('API Key? ')
