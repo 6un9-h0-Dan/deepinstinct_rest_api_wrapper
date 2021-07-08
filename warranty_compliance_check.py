@@ -21,9 +21,24 @@ while di.key in ('API-KEY', ''):
     di.key = input('API Key? ')
 
 #Get data from server
+print('INFO: Getting policy data from server')
 policies = di.get_policies(include_policy_data=True)
+print('INFO: Getting device data from server')
+devices = di.get_devices(include_deactivated=False)
+
+# Calculate device_count for each policy (how many active devices in policy)
+# Add device_countfield with initial value zero
+print('INFO: Calculating device count for each policy')
+for policy in policies:
+    policy['device_count'] = 0
+# Iterate through devices and policies, incrementing device_count appropriately
+for device in devices:
+    for policy in policies:
+        if policy['id'] == device['policy_id']:
+            policy['device_count'] +=1
 
 #Extract Windows policies
+print('INFO: Extracting Windows policies to new list windows_policies')
 windows_policies = []
 for policy in policies:
     if policy['os'] == 'WINDOWS':
@@ -31,29 +46,31 @@ for policy in policies:
 
 #Iterate through Windows policies, determine compliance or lack thereof, and assign to appropriate list
 
+print('INFO: Analyzing policies for compliance')
+
 compliant_windows_policies = []
 noncompliant_windows_policies = []
 
 for policy in windows_policies:
 
     policy['compliant'] = True  #initially assume compliant; will change to false if violation(s) identified
-    policy['compliance_violations'] = []  #define list to store details of violation(s) if any
+    policy['compliance_violations'] = {}  #define dictionary to store details of violation(s) if any
 
     if policy['prevention_level'] not in ['HIGH', 'MEDIUM', 'LOW']:
         policy['compliant'] = False
-        policy['compliance_violations'].append('prevention_level is set to ' + policy['prevention_level'])
+        policy['compliance_violations']['prevention_level'] = policy['prevention_level']
 
     if policy['remote_code_injection'] != 'PREVENT':
         policy['compliant'] = False
-        policy['compliance_violations'].append('remote_code_injection is set to ' + policy['remote_code_injection'])
+        policy['compliance_violations']['remote_code_injection'] = policy['remote_code_injection']
 
     if policy['arbitrary_shellcode_execution'] != 'PREVENT':
         policy['compliant'] = False
-        policy['compliance_violations'].append('arbitrary_shellcode_execution is set to ' + policy['arbitrary_shellcode_execution'])
+        policy['compliance_violations']['arbitrary_shellcode_execution'] = policy['arbitrary_shellcode_execution']
 
     if policy['ransomware_behavior'] != 'PREVENT':
         policy['compliant'] = False
-        policy['compliance_violations'].append('ransomware_behavior is set to ' + policy['ransomware_behavior'])
+        policy['compliance_violations']['ransomware_behavior'] = policy['ransomware_behavior']
 
     #TODO: Add logic to check the following atttributes of the Windows policy:
     #   1. D-Cloud Services (compliance requires that this be enabled)
@@ -66,16 +83,42 @@ for policy in windows_policies:
     else:
         noncompliant_windows_policies.append(policy)
 
-#Print results to console
+#Calculate how many devices are in compliant versus non-compliance policies
 
-print('Deep Instinct Ransomware Warranty Compliance Check |', di.fqdn, '|', datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M"), 'UTC')
+print('INFO: Counting sum of devices in policies in each category')
 
-print('\nThe following Windows policies are compliant:')
-print('compliant\tmsp_id\tmsp_name\tpolicy_id\tpolicy_name')
+device_count_compliant_windows_policies = 0
 for policy in compliant_windows_policies:
-    print(policy['compliant'], '\t', policy['msp_id'], '\t', policy['msp_name'], '\t', policy['id'], '\t', policy['name'])
+    device_count_compliant_windows_policies += policy['device_count']
 
-print('\nThe following Windows policies are non-compliant:')
-print('compliant\tmsp_id\tmsp_name\tpolicy_id\tpolicy_name\tcompliance_violations')
+device_count_noncompliant_windows_policies = 0
 for policy in noncompliant_windows_policies:
-    print(policy['compliant'], '\t', policy['msp_id'], '\t', policy['msp_name'], '\t', policy['id'], '\t', policy['name'], '\t', policy['compliance_violations'])
+    device_count_noncompliant_windows_policies += policy['device_count']
+
+
+#Write results to disk
+
+print('INFO: Calculating file and folder names for export')
+folder_name = di.create_export_folder()
+file_name = f'warranty_compliance_audit_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M")}.txt'
+
+print('INFO: Opening file for writing data to to disk')
+output = open(f'{folder_name}\{file_name}', 'a')
+
+print('INFO: Writing data to disk')
+output.writelines(['--------\nDeep Instinct Ransomware Warranty Compliance Check\n', di.fqdn, '\n', datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M"), ' UTC\n--------\n\n'])
+output.writelines([str(device_count_compliant_windows_policies), ' devices are in a compliant Windows policy.\n'])
+output.writelines([str(device_count_noncompliant_windows_policies), ' devices are in a non-compliant Windows policy.\n'])
+output.writelines(['\n', str(len(compliant_windows_policies)), ' Windows policies are compliant:\n\n'])
+output.writelines(['msp_id\tmsp_name\tpolicy_id\tpolicy_name\tdevice_count\tcompliance_violations\n'])
+for policy in compliant_windows_policies:
+    output.writelines([str(policy['msp_id']), '\t', policy['msp_name'], '\t', str(policy['id']), '\t', policy['name'], '\t', str(policy['device_count']), '\t', str(policy['compliance_violations']), '\n'])
+output.writelines(['\n', str(len(noncompliant_windows_policies)), ' Windows policies are non-compliant:\n\n'])
+output.writelines(['msp_id\tmsp_name\tpolicy_id\tpolicy_name\tdevice_count\tcompliance_violations\n'])
+for policy in noncompliant_windows_policies:
+    output.writelines([str(policy['msp_id']), '\t', policy['msp_name'], '\t', str(policy['id']), '\t', policy['name'], '\t', str(policy['device_count']), '\t', str(policy['compliance_violations']), '\n'])
+
+print('INFO: Closing file for writing data to to disk')
+output.close()
+
+print('INFO: Done. Results written to', f'{folder_name}\{file_name}')
