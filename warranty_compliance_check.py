@@ -14,6 +14,9 @@ else:
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
 di.key = 'API-KEY'
 
+# Config parameter to determine whether to exclude empty policies (those with no devices) in analysis
+exclude_empty_policies = True
+
 # Validate config and prompt if not provided above
 while di.fqdn in ('SERVER-NAME.customers.deepinstinctweb.com', ''):
     di.fqdn = input('FQDN of DI Server? ')
@@ -36,6 +39,17 @@ for device in devices:
     for policy in policies:
         if policy['id'] == device['policy_id']:
             policy['device_count'] +=1
+
+if exclude_empty_policies:
+    print('INFO: Narrowing policy list to include only those which contain 1 or more activated devices')
+    non_empty_policies = []
+    for policy in policies:
+        if policy['device_count'] > 0:
+            non_empty_policies.append(policy)
+    empty_policy_count = len(policies) - len(non_empty_policies)
+    policies = non_empty_policies
+else:
+    print('INFO: exclude_empty_policies is disabled, therefore proceeding with analysis on all policies')
 
 #Extract Windows policies
 print('INFO: Extracting Windows policies to new list windows_policies')
@@ -106,7 +120,13 @@ print('INFO: Opening file for writing data to to disk')
 output = open(f'{folder_name}\{file_name}', 'a')
 
 print('INFO: Writing data to disk')
+
 output.writelines(['--------\nDeep Instinct Ransomware Warranty Compliance Check\n', di.fqdn, '\n', datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M"), ' UTC\n--------\n\n'])
+
+if exclude_empty_policies:
+    if empty_policy_count > 0:
+        output.writelines(['NOTE: Data below excludes ', str(empty_policy_count), ' policies containing 0 activated devices.\n\n'])
+
 output.writelines([str(device_count_compliant_windows_policies), ' devices are in a compliant Windows policy.\n'])
 output.writelines([str(device_count_noncompliant_windows_policies), ' devices are in a non-compliant Windows policy.\n'])
 output.writelines(['\n', str(len(compliant_windows_policies)), ' Windows policies are compliant:\n\n'])
