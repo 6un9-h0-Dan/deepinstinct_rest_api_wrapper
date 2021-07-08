@@ -586,6 +586,7 @@ def get_events(search={}, minimum_event_id=0):
         #make request to server, store response
         response = requests.post(request_url, headers=headers, json=search)
         #check HTTP return code, and in case of error exit the method and return empty list
+        print('INFO:', request_url, 'returned' , response.status_code)
         if response.status_code != 200:
             return []
         else:
@@ -602,6 +603,31 @@ def get_events(search={}, minimum_event_id=0):
 
     #return the list of collected events
     return collected_events
+
+#Return a list of all events from 1 up to the provided max_event_id. This
+#method is useful if you want to include Suspicous Events, which are not
+#in scope for the API method used by the standard get_events method
+def get_all_events(max_event_id, min_event_id=1):
+
+    #define HTTP headers for all requests in this method
+    headers = {'accept': 'application/json', 'Authorization': key}
+
+    #list to collect events
+    collected_events = []
+
+    #loop until we have collected all events within specified range
+    for event_id in range(min_event_id, max_event_id):
+        request_url = f'https://{fqdn}/api/v1/events/{str(event_id)}'
+        response = requests.get(request_url, headers=headers)
+        if response.status_code == 200:
+            print('INFO:', request_url, 'returned', response.status_code)
+            event = response.json()['event']
+            collected_events.append(event)
+        else:
+            print('ERROR: Unexpected return code', response.status_code, 'on GET', request_url)
+
+    return collected_events
+
 
 #Return a list of all visible Device Groups
 def get_groups(exclude_default_groups=False):
