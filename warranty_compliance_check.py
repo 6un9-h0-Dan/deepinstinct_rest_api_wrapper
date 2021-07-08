@@ -22,13 +22,6 @@ while di.key in ('API-KEY', ''):
 
 #Get data from server
 policies = di.get_policies(include_policy_data=True)
-msps = di.get_msps()
-
-#Add msp_name to policies
-for policy in policies:
-    for msp in msps:
-        if policy['msp_id'] == msp['id']:
-            policy['msp_name'] = msp['name']
 
 #Extract Windows policies
 windows_policies = []
