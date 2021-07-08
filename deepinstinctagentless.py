@@ -11,7 +11,7 @@ import requests, base64, json, urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 #varibable for storing FQDN/IP of the agentless connector for performing scan
-agentless_connector = ''
+agentless_connector = '192.168.86.48'
 
 
 def scan_file(file_name, encoded=False):
