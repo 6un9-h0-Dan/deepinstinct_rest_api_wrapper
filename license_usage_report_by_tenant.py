@@ -32,7 +32,7 @@ for tenant in tenants:
     for msp in msps:
         if tenant['msp_id'] == msp['id']:
             tenant['msp_name'] = msp['name']
- 
+
 # Add licenses_used to tenants data with initial value 0
 for tenant in tenants:
     tenant['licenses_used'] = 0

@@ -20,7 +20,7 @@ for tenant in tenants:
 print('INFO: Getting Policy data from server')
 policies = di.get_policies(include_policy_data=True)
 print('INFO:', len(policies), 'policies returned')
- 
+
 print('INFO: Getting Device data from server')
 devices = di.get_devices(include_deactivated=False)
 print('INFO:', len(devices), 'devices returned')

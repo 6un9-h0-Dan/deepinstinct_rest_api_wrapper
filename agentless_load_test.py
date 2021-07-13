@@ -40,4 +40,3 @@ results['net_throughput_in_megabytes_per_second'] = results['scan_volume_in_mega
 
 # PRINT RESULTS TO CONSOLE
 print('\n', json.dumps(results, indent=4))
- 

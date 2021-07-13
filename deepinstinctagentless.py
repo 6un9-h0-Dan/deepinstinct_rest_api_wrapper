@@ -45,4 +45,3 @@ def scan_file(file_name, encoded=False):
 
 def scan_file_encoded(file_name):
     return scan_file(encoded=True, file_name=file_name)
- 
