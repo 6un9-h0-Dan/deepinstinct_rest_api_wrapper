@@ -1,8 +1,8 @@
 # Disclaimer:
 # This code is provided as an example of how to build code against and interact
 # with the Deep Instinct Agentless Connector over REST API. It is provided
-# AS-IS/NO WARRANTY. It has limited error checking and logging, and likely 
-# contains defects or other deficiencies. Test thoroughly first, and use at your 
+# AS-IS/NO WARRANTY. It has limited error checking and logging, and likely
+# contains defects or other deficiencies. Test thoroughly first, and use at your
 # own risk. This sample is not a Deep Instinct commercial product and is not
 # officially supported, although the API that it calls is.
 #
@@ -45,3 +45,4 @@ def scan_file(file_name, encoded=False):
 
 def scan_file_encoded(file_name):
     return scan_file(encoded=True, file_name=file_name)
+ 

@@ -3,7 +3,7 @@
 # with the Deep Instinct REST API. It is provided AS-IS/NO WARRANTY. It has
 # limited error checking and logging, and likely contains defects or other
 # deficiencies. Test thoroughly first, and use at your own risk. The API
-# Wrapper and associated samples are not Deep Instinct commercial products and 
+# Wrapper and associated samples are not Deep Instinct commercial products and
 # are not officially supported, although he underlying REST API is. This means
 # that to report an issue to tech support you must remove the API Wrapper layer
 # and recreate the problem with a reproducible test case against the raw/pure
@@ -32,7 +32,7 @@ for tenant in tenants:
     for msp in msps:
         if tenant['msp_id'] == msp['id']:
             tenant['msp_name'] = msp['name']
-
+ 
 # Add licenses_used to tenants data with initial value 0
 for tenant in tenants:
     tenant['licenses_used'] = 0

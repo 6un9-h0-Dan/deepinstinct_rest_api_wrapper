@@ -28,7 +28,7 @@ print('INFO: Getting policy data from server')
 policies = di.get_policies(include_policy_data=True)
 print('INFO: Getting device data from server')
 devices = di.get_devices(include_deactivated=False)
-
+ 
 # Calculate device_count for each policy (how many active devices in policy)
 # Add device_countfield with initial value zero
 print('INFO: Calculating device count for each policy')

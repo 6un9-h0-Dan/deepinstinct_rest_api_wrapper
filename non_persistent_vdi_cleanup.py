@@ -27,7 +27,7 @@ devices = di.get_devices()
 
 # Get current time and store as variable
 now = datetime.datetime.utcnow()
-
+ 
 # Define a list to store devices which meet criteria to be removed
 devices_to_remove = []
 

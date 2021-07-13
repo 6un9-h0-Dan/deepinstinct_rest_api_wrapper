@@ -31,7 +31,7 @@ while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
     di.fqdn = input('FQDN of DI Server? ')
 while di.key == 'API-KEY':
     di.key = input('API Key? ')
-
+ 
 # ==============================================================================
 # THIS SECTION SHOWS A SERIES OF EXAMPLES OF HOW TO USE di.get_events TO GET
 # ALL OR SOME OF THE EVENTS VISIBLE TO THE PROVIDED API KEY FROM THE SERVER
