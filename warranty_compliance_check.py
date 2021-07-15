@@ -13,15 +13,19 @@ else:
 # Optional hardcoded config - if not provided, you'll be prompted at runtime
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
 di.key = 'API-KEY'
-
-# Config parameter to determine whether to exclude empty policies (those with no devices) in analysis
-exclude_empty_policies = True
+exclude_empty_policies = ''
 
 # Validate config and prompt if not provided above
 while di.fqdn in ('SERVER-NAME.customers.deepinstinctweb.com', ''):
-    di.fqdn = input('FQDN of DI Server? ')
+    di.fqdn = input('FQDN of DI Server? [foo.bar.deepinstinctweb.com] ')
 while di.key in ('API-KEY', ''):
     di.key = input('API Key? ')
+while exclude_empty_policies not in (True, False):
+    exclude_empty_policies_question_response = input('Ignore empty policies? [Yes | No] ')
+    if exclude_empty_policies_question_response.lower() == 'yes':
+        exclude_empty_policies = True
+    elif exclude_empty_policies_question_response.lower() == 'no':
+        exclude_empty_policies = False
 
 #Get data from server
 print('INFO: Getting policy data from server')

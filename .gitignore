@@ -1,2 +1,4 @@
 *.pyc
 *.ipynb
+*.xlsx
+exported_data_from_*.deepinstinctweb.com/*
