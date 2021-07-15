@@ -1,43 +1,90 @@
-# Disclaimer:
-# This code is provided as an example of how to build code against and interact
-# with the Deep Instinct REST API. It is provided AS-IS/NO WARRANTY. It has
-# limited error checking and logging, and likely contains defects or other
-# deficiencies. Test thoroughly first, and use at your own risk. The API
-# Wrapper and associated samples are not Deep Instinct commercial products and
-# are not officially supported, although he underlying REST API is. This means
-# that to report an issue to tech support you must remove the API Wrapper layer
-# and recreate the problem with a reproducible test case against the raw/pure
-# DI REST API.
-#
+import pandas, datetime
 
-import deepinstinct25 as di, pandas, datetime
+# Prompt use for D-Appliance Version, validate input, then import appropriate
+# version of the REST API Wrapper
+di_version = ''
+while di_version not in ['3.0', '2.5']:
+    di_version = input('DI Server Version [3.0 | 2.5]? ')
+if di_version == '3.0':
+    import deepinstinct30 as di
+else:
+    import deepinstinct25 as di
 
 # Optional hardcoded config - if not provided, you'll be prompted at runtime
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
 di.key = 'API-KEY'
+include_policy_mode_counts = ''
 
 # Validate config and prompt if not provided above
-while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
-    di.fqdn = input('FQDN of DI Server? ')
-while len(di.key) != 257:
+while di.fqdn in ('SERVER-NAME.customers.deepinstinctweb.com', ''):
+    di.fqdn = input('FQDN of DI Server? [foo.bar.deepinstinctweb.com] ')
+while di.key in ('API-KEY', ''):
     di.key = input('API Key? ')
+while include_policy_mode_counts not in (True, False):
+    input_response = input('Include prevention/detection mode counts? [Yes | No] ')
+    if input_response.lower() == 'yes':
+        include_policy_mode_counts = True
+    elif input_response.lower() == 'no':
+        include_policy_mode_counts = False
+
 
 # Get tenants, msps, and devices from DI server
+print('INFO: Getting Tenant data from server')
 tenants = di.get_tenants()
+print('INFO: Getting MSP data from server')
 msps = di.get_msps()
-devices = di.get_devices()
+print('INFO: Getting Device data from server')
+if di_version == '2.5':
+    devices = di.get_devices()
+else:
+    devices = di.get_devices(include_deactivated=False)
 
 # Look up MSP name for each tenant and add it to the tenants data
+print('INFO: Adding MSP names to Tenant data')
 for tenant in tenants:
     for msp in msps:
         if tenant['msp_id'] == msp['id']:
             tenant['msp_name'] = msp['name']
 
-# Add licenses_used to tenants data with initial value 0
+# If option to include policy mode counts is enabled, get policy details,
+# then parse policies to calculate mode, then add that data to devices
+if include_policy_mode_counts:
+    print('INFO: Getting policy data from server')
+    policies = di.get_policies(include_policy_data=True)
+
+    print('INFO: Parsing policy data to determine policy mode')
+
+    for policy in policies:
+
+        policy['prevention_mode'] = False
+
+        if policy['os'] == 'WINDOWS':
+            if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH'):
+                if policy['ransomware_behavior'] == 'PREVENT':
+                    if policy['remote_code_injection'] == 'PREVENT':
+                        if policy['arbitrary_shellcode_execution'] == 'PREVENT':
+                            policy['prevention_mode'] = True
+
+        elif 'prevention_level' in policy.keys():
+            if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH'):
+                policy['prevention_mode'] = True
+
+    print('INFO: Adding policy mode to device data')
+    for device in devices:
+        for policy in policies:
+            if policy['id'] == device['policy_id']:
+                device['prevention_mode'] = policy['prevention_mode']
+
+# Calculate license usage for each tenant (plus prevention/detection data, if enabled in config)
+if include_policy_mode_counts:
+    print('INFO: Parsing device data to calculate licenses used plus prevention/detection counts for each tenant')
+else:
+    print('INFO: Parsing device data to calculate licenses used for each tenant')
 for tenant in tenants:
     tenant['licenses_used'] = 0
-
-# Inspect each device in devices data
+    if include_policy_mode_counts:
+        tenant['devices_in_prevention_mode'] = 0
+        tenant['devices_in_detection_mode'] = 0
 for device in devices:
     # Check if the device has an activated license (if not skip it)
     if device['license_status'] == 'ACTIVATED':
@@ -46,21 +93,45 @@ for device in devices:
             if tenant['id'] == device['tenant_id']:
                 # ...and increment the licenses_used counter in the matching tenant by 1
                 tenant['licenses_used'] += 1
+                # If enabled, also increment the prevention/detection counter
+                if include_policy_mode_counts:
+                    if device['prevention_mode']:
+                        tenant['devices_in_prevention_mode'] += 1
+                    else:
+                        tenant['devices_in_detection_mode'] += 1
 
 # Calculate percent_of_licenses_used for reach tenant and add results to tenants data
+print('INFO: Calculating percentage of licenses used for each tenant')
 for tenant in tenants:
-    if tenant['license_limit'] > 0:  #avoids a divisiion by zero error for tenants with no assigned licenses
-        tenant['percent_of_licenses_used'] = (tenant['licenses_used'] / tenant['license_limit'] * 100)
-    else:
+    if tenant['license_limit'] == 0:  #avoids a divisiion by zero error for tenants with no assigned licenses
         tenant['percent_of_licenses_used'] = 0
+    else:
+        tenant['percent_of_licenses_used'] = (tenant['licenses_used'] / tenant['license_limit'])
 
-# Convert tenants data to a Pandas data frame for easier manipulation and export
+# If enabled in config, calculate percentage of devices in prevention mode and add to tenant data
+if include_policy_mode_counts:
+    print('INFO: Calculating percentage of devices in prevention mode for each tenant')
+    for tenant in tenants:
+        if tenant['licenses_used'] == 0:  #avoid division by zero for empty tenants
+            tenant['percent_of_devices_in_prevention'] = 0
+        else:
+            tenant['percent_of_devices_in_prevention'] = (tenant['devices_in_prevention_mode'] / tenant['licenses_used'])
+
+# Convert the data to a Pandas data frame for easier manipulation and export
+print('INFO: Preparing data for export')
 tenants_df = pandas.DataFrame(tenants)
 
 # Sort the data frame alphabetically by msp name and then by tenant name
+print('INFO: Sorting data for export')
 tenants_df.sort_values(by=['msp_name', 'name'], inplace=True)
 
-# Export the data frame to disk in Excel format
-file_name = f'license_usage_report_by_tenant_{di.fqdn}_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
-tenants_df.to_excel(file_name, index=False, columns=['msp_name', 'name', 'licenses_used', 'license_limit', 'percent_of_licenses_used'])
-print('Data was exported to disk as', file_name)
+# Export the sorted data frame to disk in Excel format
+print('INFO: Calculating export folder name and file name')
+folder_name = di.create_export_folder()
+file_name = f'license_usage_report_by_tenant_{di.fqdn}_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M")}_UTC.xlsx'
+print('INFO: Exporting data to disk')
+if include_policy_mode_counts:
+    tenants_df.to_excel(f'{folder_name}/{file_name}', index=False, columns=['msp_name', 'name', 'licenses_used', 'license_limit', 'percent_of_licenses_used', 'devices_in_prevention_mode', 'devices_in_detection_mode', 'percent_of_devices_in_prevention'])
+else:
+    tenants_df.to_excel(f'{folder_name}/{file_name}', index=False, columns=['msp_name', 'name', 'licenses_used', 'license_limit', 'percent_of_licenses_used'])
+print('INFO: Data was exported to disk as', f'{folder_name}/{file_name}')

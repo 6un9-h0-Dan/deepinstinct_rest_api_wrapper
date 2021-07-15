@@ -118,7 +118,7 @@ for policy in noncompliant_windows_policies:
 
 print('INFO: Calculating file and folder names for export')
 folder_name = di.create_export_folder()
-file_name = f'warranty_compliance_audit_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M")}.txt'
+file_name = f'warranty_compliance_audit_{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d_%H.%M")}_UTC.txt'
 
 print('INFO: Opening file for writing data to to disk')
 output = open(f'{folder_name}\{file_name}', 'a')
