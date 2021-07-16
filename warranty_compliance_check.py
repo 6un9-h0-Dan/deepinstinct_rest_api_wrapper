@@ -94,7 +94,7 @@ for policy in windows_policies:
     #   1. D-Cloud Services (compliance requires that this be enabled)
     #   2. Malicious PowerShell Prevention (compliance requires that this be in Prevention)
     #Both of above require that product make these fields visible via the REST API. Submitted
-    #as FR-166 and FR-177 on 2021-07-06
+    #as FR-166 and FR-167 on 2021-07-06
 
     if policy['compliant'] == True:
         compliant_windows_policies.append(policy)
