@@ -701,3 +701,27 @@ def create_export_folder():
         # ...If not, then create it
         os.makedirs(exported_data_folder_name)
     return exported_data_folder_name
+
+def get_event(event_id, suspicious=False):
+
+    #define headers
+    headers = {'accept': 'application/json', 'Authorization': key}
+
+    #calculate request url
+    if suspicious:
+        request_url = f'https://{fqdn}/api/v1/suspicious-events/{str(event_id)}'
+    else:
+        request_url = f'https://{fqdn}/api/v1/events/{str(event_id)}'
+
+    #make request, store response
+    response = requests.get(request_url, headers=headers)
+
+    # based on response code, return event or alternately an error code
+    if response.status_code == 200:
+        return response.json()['event']
+    elif response.status_code == 404:
+        print('ERROR: Event', str(event_id), 'not found')
+        return []
+    else:
+        print('ERROR: Unexpected return code', str(response.status_code), 'on request to', request_url)
+        return []
