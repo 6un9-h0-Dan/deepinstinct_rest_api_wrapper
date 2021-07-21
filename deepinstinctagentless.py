@@ -101,6 +101,7 @@ def simplify_verdict(verdict):
             print('WARNING: Error in processing verfict passed to simplify_verdict:\n', verdict)
             return None
 
- def scan_and_pretty_print(file_name):
+#Method to accept a file name relative to a hardcoded path and then run a scan and print simplified results. Useful for testing/demo situations.
+def scan_and_pretty_print(file_name):
     scan_result = scan_file(f'/Volumes/Macintosh HD/Users/Shared/malware_samples/{file_name}')
     print(json.dumps(scan_result,indent=4))
