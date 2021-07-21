@@ -47,7 +47,7 @@ def scan_file(file_name, encoded=False, scanner_ip='192.168.86.40', simplified=T
         print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url)
         return None
 
-    
+
 #Wrapper which invokes scan_file with the parameter to use encoding
 def scan_file_encoded(file_name, scanner_ip='192.168.86.40', simplified=True):
     return scan_file(encoded=True, file_name=file_name, scanner_ip=scanner_ip, simplified=simplified)
@@ -61,12 +61,12 @@ def simplify_verdict(verdict):
     if 'verdict' not in verdict.keys():
         print('ERROR: The verdict passed to simplify_verdict is missing or corrupt:\n', verdict)
         return None
-    
+
     else:
         #remove the redundent text 'filetype' from the file type value, if present
         if 'file_type' in verdict.keys():
             verdict['file_type'] = verdict['file_type'].replace('FileType','')
-    
+
         if verdict['verdict'] == 'Malicious':
 
             if verdict['severity'] in ['VERY_HIGH', 'HIGH']:
@@ -96,12 +96,11 @@ def simplify_verdict(verdict):
             return {'verdict': 'Unsupported',
                     'file_type': 'Other',
                     'scan_guid': verdict['scan_guid']}
-    
+
         else:
             print('WARNING: Error in processing verfict passed to simplify_verdict:\n', verdict)
             return None
 
-#Method to accept a file name relative to a hardcoded path and then run a scan and print simplified results. Useful for testing/demo situations.
 def scan_and_pretty_print(file_name):
     scan_result = scan_file(f'/Volumes/Macintosh HD/Users/Shared/malware_samples/{file_name}')
     print(json.dumps(scan_result,indent=4))
