@@ -100,7 +100,7 @@ def simplify_verdict(verdict):
         else:
             print('WARNING: Error in processing verfict passed to simplify_verdict:\n', verdict)
             return None
-
+        
 def scan_and_pretty_print(file_name):
     scan_result = scan_file(f'/Volumes/Macintosh HD/Users/Shared/malware_samples/{file_name}')
     print(json.dumps(scan_result,indent=4))
