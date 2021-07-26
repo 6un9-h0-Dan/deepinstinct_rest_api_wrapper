@@ -7,15 +7,16 @@
 # officially supported, although the API that it calls is.
 #
 
+#Import required libraries
 import requests, base64, json, urllib3
+
+#Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#varibable for storing FQDN/IP of the agentless connector for performing scan
-agentless_connector = '192.168.86.48'
+#Primary method which accepts file name and optional config data, submits scan, simplifies it, and returns result
+def scan_file(file_name, encoded=False, scanner_ip='192.168.86.40', simplified=True):
 
-
-def scan_file(file_name, encoded=False):
-    # read file from disk. rb means opens the file in binary format for reading
+    # read file from disk (rb means opens the file in binary format for reading)
     with open(file_name, 'rb') as f:
         #read file
         data = f.read()
@@ -25,23 +26,81 @@ def scan_file(file_name, encoded=False):
     if encoded:
         #encode data and set URL to match
         data = base64.b64encode(data)
-        request_url = f'https://{agentless_connector}:5000/scan/base64'
+        request_url = f'https://{scanner_ip}:5000/scan/base64'
     else:
         #leave data as-is and set URL to match
-        request_url = f'https://{agentless_connector}:5000/scan/binary'
+        request_url = f'https://{scanner_ip}:5000/scan/binary'
 
     # send scan request, capture response
     response = requests.post(request_url, data=data, timeout=20, verify=False)
 
-    # validate response code, return verdict as Python dictionary
+    # validate response code and proceed if expected value 200
     if response.status_code == 200:
+        #convert to Python dictionary
         verdict = response.json()
+        if simplified:
+            #Call function to simplify the verdict
+            verdict = simplify_verdict(verdict)
+        #Return [simplified] verdict
         return verdict
     else:
-        print('ERROR: Unexpected return code', response.status_code,
-        'on POST to', request_url)
+        print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url)
         return None
 
 
-def scan_file_encoded(file_name):
-    return scan_file(encoded=True, file_name=file_name)
+#Wrapper which invokes scan_file with the parameter to use encoding
+def scan_file_encoded(file_name, scanner_ip='192.168.86.40', simplified=True):
+    return scan_file(encoded=True, file_name=file_name, scanner_ip=scanner_ip, simplified=simplified)
+
+
+# A method used to convert the raw verdict received from DI Agentless into a simplified/more user-friendly format
+# --> Recommend to use this with an Agentless Policy where "prevention" is enabled at Threat Severity "Low" and above
+# --> This method introduces the concept of a "Suspicious" verdict, which is for files that score Low or Moderate
+def simplify_verdict(verdict):
+
+    if 'verdict' not in verdict.keys():
+        print('ERROR: The verdict passed to simplify_verdict is missing or corrupt:\n', verdict)
+        return None
+
+    else:
+        #remove the redundent text 'filetype' from the file type value, if present
+        if 'file_type' in verdict.keys():
+            verdict['file_type'] = verdict['file_type'].replace('FileType','')
+
+        if verdict['verdict'] == 'Malicious':
+
+            if verdict['severity'] in ['VERY_HIGH', 'HIGH']:
+
+                return {'verdict': 'Malicious',
+                        'file_type': verdict['file_type'],
+                        'threat_severity': verdict['severity'],
+                        'file_hash': verdict['file_hash'],
+                        'scan_guid': verdict['scan_guid']}
+
+            else:
+
+                return {'verdict': 'Suspicious',
+                        'file_type': verdict['file_type'],
+                        'threat_severity': verdict['severity'],
+                        'file_hash': verdict['file_hash'],
+                        'scan_guid': verdict['scan_guid']}
+
+        elif verdict['verdict'] == 'Benign':
+
+            return {'verdict': 'Benign',
+                    'file_type': verdict['file_type'],
+                    'file_hash': verdict['file_hash'],
+                    'scan_guid': verdict['scan_guid']}
+
+        elif verdict['verdict'] == 'Not Classified':
+            return {'verdict': 'Unsupported',
+                    'file_type': 'Other',
+                    'scan_guid': verdict['scan_guid']}
+
+        else:
+            print('WARNING: Error in processing verfict passed to simplify_verdict:\n', verdict)
+            return None
+        
+def scan_and_pretty_print(file_name):
+    scan_result = scan_file(f'/Volumes/Macintosh HD/Users/Shared/malware_samples/{file_name}')
+    print(json.dumps(scan_result,indent=4))
