@@ -391,7 +391,7 @@ def remove_devices_from_group(device_ids, group_id):
 
 
 # Collect and return list of Device Policies.
-def get_policies(include_policy_data=False, include_allow_deny_lists=False):
+def get_policies(include_policy_data=False, include_allow_deny_lists=False, keep_data_encapsulated=False):
     # GET POLICIES (basic data only)
 
     # Calculate headers and URL
@@ -414,7 +414,10 @@ def get_policies(include_policy_data=False, include_allow_deny_lists=False):
             # Check response code (for some platforms, no policy data available)
             if response.status_code == 200:
                 # Extract policy data from response and append it to policy
-                policy_data = response.json()['data']
+                if keep_data_encapsulated:
+                    policy_data = response.json()
+                else:
+                    policy_data = response.json()['data']
                 policy.update(policy_data)
 
     # APPEND ALLOW-LIST AND DENY-LIST DATA (IF ENABLED)
@@ -725,3 +728,53 @@ def get_event(event_id, suspicious=False):
     else:
         print('ERROR: Unexpected return code', str(response.status_code), 'on request to', request_url)
         return []
+
+def create_policy(name, base_policy_id, comment=''):
+
+    #define headers
+    headers = {'accept': 'application/json', 'Authorization': key}
+
+    #calculate request url
+    request_url = f'https://{fqdn}/api/v1/policies/'
+
+    #create the payload
+    payload = {'name': name, 'comment': comment, 'base_policy_id': base_policy_id}
+
+    # Send request to server
+    response = requests.post(request_url, json=payload, headers=headers)
+
+    # Check response code
+    if response.status_code == 200:
+        response = response.json()
+        print('INFO: Policy', response['id'], response['name'], 'created')
+        return response
+    else:
+        print('ERROR: Unexpected return code', response.status_code,
+        'on POST to', request_url, 'with payload\n', payload)
+        return None
+
+def delete_policy(policy_id):
+
+    #define headers
+    headers = {'accept': 'application/json', 'Authorization': key}
+
+    #calculate request url
+    request_url = f'https://{fqdn}/api/v1/policies/{policy_id}'
+
+    # Send request to server
+    response = requests.delete(request_url, headers=headers)
+
+    # Check response code
+    if response.status_code == 204:
+        print('INFO: Policy', policy_id, 'was deleted')
+        return True
+    elif response.status_code == 404:
+        print('ERROR: Policy', policy_id, 'not found')
+        return False
+    elif response.status_code == 422:
+        print('ERROR: Policy', policy_id, 'is a default policy. Default policies cannot be deleted.')
+        return False
+    else:
+        print('ERROR: Unexpected return code', response.status_code,
+        'on DELETE to', request_url)
+        return False
