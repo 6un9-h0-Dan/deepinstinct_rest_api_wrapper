@@ -11,26 +11,23 @@
 #    default policies pre-migration.
 
 # Configuration
-source_fqdn = ''
-source_key = ''
-destination_fqdn = ''
-destination_key = ''
-platforms_to_migrate = ['WINDOWS', 'MAC']
+source_fqdn = 'FOO.customers.deepinstinctweb.com'
+source_key = 'api_key_for_foo'
+destination_fqdn = 'BAR.customers.deepinstinctweb.com'
+destination_key = 'api_key_for_bar'
+platforms_to_migrate = ['MAC', 'WINDOWS']
 
 #import REST API Wrapper for appropriate version of A-Appliance here
 import deepinstinct30 as di, requests
 
 #get policies from source server
+print('INFO: Getting policies from source server', source_fqdn)
 di.fqdn = source_fqdn
 di.key = source_key
 source_server_policies = di.get_policies(include_policy_data=True, keep_data_encapsulated=True)
 
-#build a list of policy names from source server
-source_server_policy_names = []
-for policy in source_server_policies:
-    source_server_policy_names.append(policy['name'])
-
 #get policies from destination server
+print('INFO: Getting policies from destination server', destination_fqdn)
 di.fqdn = destination_fqdn
 di.key = destination_key
 destination_server_policies = di.get_policies(include_policy_data=True, keep_data_encapsulated=True)
@@ -41,6 +38,7 @@ for policy in destination_server_policies:
     destination_server_policy_names.append(policy['name'])
 
 #build a list of policies to migrate
+print('INFO: Examining data to calculate which policies to migrate')
 policies_to_migrate = []
 for policy in source_server_policies:
     if policy['os'] in platforms_to_migrate:
@@ -49,13 +47,14 @@ for policy in source_server_policies:
                 policies_to_migrate.append(policy)
 
 #build dictionary of default policy IDs on destination server
+print('INFO: Building dictionary of default policy IDs by platform on', destination_fqdn)
 destination_default_policy_ids = {}
 for policy in destination_server_policies:
     if policy['is_default_policy']:
         destination_default_policy_ids[policy['os']] = policy['id']
-#print(destination_default_policy_ids)
 
 #migrate the policies
+print('INFO: Prep work is done. Beginning to migrate data from', source_fqdn, 'to', destination_fqdn)
 for policy in policies_to_migrate:
 
     #first step is to create the base policy, which we'll base on the platform-specific default policy
