@@ -778,3 +778,22 @@ def delete_policy(policy_id):
         print('ERROR: Unexpected return code', response.status_code,
         'on DELETE to', request_url)
         return False
+
+def export_events(minimum_event_id=0):
+    events = di.get_events(minimum_event_id=minimum_event_id)
+    if len(events) > 0:
+        events_df = pandas.DataFrame(events)
+        events_df.sort_values(by=['id'], inplace=True)
+        folder_name = di.create_export_folder()
+        file_name = f'events_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
+        events_df.to_excel(f'{folder_name}/{file_name}', index=False)
+        print('INFO:', len(events), 'events were exported to disk as:', f'{folder_name}/{file_name}')
+    else:
+        print('WARNING: No events were found on the server')
+
+def export_groups(exclude_default_groups=False):
+    groups = di.get_groups(exclude_default_groups=exclude_default_groups)
+    groups_df = pandas.DataFrame(groups)
+    folder_name = di.create_export_folder()
+    file_name = f'groups_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
+    groups_df.to_excel(f'{folder_name}/{file_name}', index=False)
