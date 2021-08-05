@@ -195,7 +195,7 @@ def enable_upgrades(platforms=['WINDOWS','MAC'], automatic_upgrade=True, return_
     # Static headers for all requests in this function
     headers = {'accept': 'application/json', 'Authorization': key}
 
-    # Iterate through the policies
+    # Iterate through the polic0ies
     for policy in policies:
         # Check if the OS of the current policy is one of the targeted platforms
         if policy['os'] in platforms:
@@ -780,11 +780,11 @@ def delete_policy(policy_id):
         return False
 
 def export_events(minimum_event_id=0):
-    events = di.get_events(minimum_event_id=minimum_event_id)
+    events = get_events(minimum_event_id=minimum_event_id)
     if len(events) > 0:
         events_df = pandas.DataFrame(events)
         events_df.sort_values(by=['id'], inplace=True)
-        folder_name = di.create_export_folder()
+        folder_name = create_export_folder()
         file_name = f'events_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
         events_df.to_excel(f'{folder_name}/{file_name}', index=False)
         print('INFO:', len(events), 'events were exported to disk as:', f'{folder_name}/{file_name}')
@@ -792,8 +792,8 @@ def export_events(minimum_event_id=0):
         print('WARNING: No events were found on the server')
 
 def export_groups(exclude_default_groups=False):
-    groups = di.get_groups(exclude_default_groups=exclude_default_groups)
+    groups = get_groups(exclude_default_groups=exclude_default_groups)
     groups_df = pandas.DataFrame(groups)
-    folder_name = di.create_export_folder()
+    folder_name = create_export_folder()
     file_name = f'groups_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
     groups_df.to_excel(f'{folder_name}/{file_name}', index=False)
