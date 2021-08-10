@@ -818,19 +818,19 @@ def create_tenant(tenant_name, license_limit, msp_name):
     # Send request to server
     response = requests.post(request_url, json=payload, headers=headers)
 
-    # Check return code and return Success or descriptive error
-    if response.status_code == 200:
-        response = response.json()
-        print('INFO: Created tenant', response['name'])
-        return response
-    elif response.status_code == 400:
-        return 'ERROR: License_limit must be greater than 1 and can not exceed available licenses'
-    elif response.status_code in (401, 404):
-        return 'ERROR: Unauthorized'
-    elif response.status_code == 409:
-        return 'ERROR: msp ID not found'
+    # Check return code and return success or descriptive error
+    if response.status_code == 200: #tenant creation was successful
+        #return value is not particularily useful, therefore we will go
+        #find the newly-created tenant in the full tenants list first so that
+        #we can return a more meaningful/useful value with things like id
+        #and activation tokens
+        tenants = get_tenants()
+        for tenant in tenants:
+            if tenant['name'] == tenant_name and tenant['msp_id'] == msp_id:
+                tenant['msp_name'] = msp_name
+                return tenant
     else:
-        return 'ERROR: Unexpected return code '+ str(response.status_code)
+        return None
 
 
 def get_msp_id(msp_name):
@@ -839,10 +839,6 @@ def get_msp_id(msp_name):
     for msp in msps:
         if msp['name'] == msp_name:
             msp_id = msp['id']
-    if msp_id == 0:
-        print('ERROR: No msp_id found for msp_name', msp_name)
-    else:
-        print('INFO: msp_id for msp_name', msp_name, 'is', msp_id)
     return msp_id
 
 
