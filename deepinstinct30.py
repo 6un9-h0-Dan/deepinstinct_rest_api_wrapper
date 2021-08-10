@@ -797,3 +797,85 @@ def export_groups(exclude_default_groups=False):
     folder_name = create_export_folder()
     file_name = f'groups_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
     groups_df.to_excel(f'{folder_name}/{file_name}', index=False)
+
+
+def create_tenant(tenant_name, license_limit, msp_name):
+
+    #convert provided msp_name to msp_id
+    msp_id = get_msp_id(msp_name)
+
+    #build payload
+    payload = {'msp_id': msp_id,
+                'name': tenant_name,
+                'license_limit': license_limit }
+
+    #calculate headers
+    headers = {'Content-Type': 'application/json', 'Authorization': key}
+
+    #calculate URL
+    request_url = f'https://{fqdn}/api/v1/multitenancy/tenant/'
+
+    # Send request to server
+    response = requests.post(request_url, json=payload, headers=headers)
+
+    # Check return code and return Success or descriptive error
+    if response.status_code == 200:
+        response = response.json()
+        print('INFO: Created tenant', response['name'])
+        return response
+    elif response.status_code == 400:
+        return 'ERROR: License_limit must be greater than 1 and can not exceed available licenses'
+    elif response.status_code in (401, 404):
+        return 'ERROR: Unauthorized'
+    elif response.status_code == 409:
+        return 'ERROR: msp ID not found'
+    else:
+        return 'ERROR: Unexpected return code '+ str(response.status_code)
+
+
+def get_msp_id(msp_name):
+    msp_id = 0
+    msps = get_msps()
+    for msp in msps:
+        if msp['name'] == msp_name:
+            msp_id = msp['id']
+    if msp_id == 0:
+        print('ERROR: No msp_id found for msp_name', msp_name)
+    else:
+        print('INFO: msp_id for msp_name', msp_name, 'is', msp_id)
+    return msp_id
+
+
+def delete_tenant(tenant_name, msp_name):
+
+    #convert provided msp_name to msp_id
+    msp_id = get_msp_id(msp_name)
+
+    #find tenant id
+    tenants = get_tenants()
+    tenant_id = 0
+    for tenant in tenants:
+        if tenant['msp_id'] == msp_id:
+            if tenant['name'] == tenant_name:
+                tenant_id = tenant['id']
+
+    #calculate URL and headers
+    request_url = f'https://{fqdn}/api/v1/multitenancy/tenant/{tenant_id}'
+    headers = {'Authorization': key}
+
+    #send request to server
+    response = requests.delete(request_url, headers=headers)
+
+    # Check return code and return Success or descriptive error
+    if response.status_code == 204:
+        print('INFO: Tenant', tenant_name, 'was deleted from MSP', msp_name)
+        return True
+    elif response.status_code == 403:
+        print('ERROR: Only Hub-Admin or MSP-Admin can delete tenants')
+        return False
+    elif response.status_code == 404:
+        print('ERROR: Tenant not found')
+        return False
+    elif response.status_code == 409:
+        print('ERROR: Tried to delete a tenant but active devices still exist!')
+        return False
