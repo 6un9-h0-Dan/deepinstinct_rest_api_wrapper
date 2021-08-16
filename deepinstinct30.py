@@ -498,7 +498,7 @@ def create_msp(msp_name, license_limit):
 
     # Check return code and return Success or descriptive error
     if response.status_code == 200:
-        return 'Success'
+        return response.json()
     elif response.status_code == 409:
         return 'ERROR: MSP name already exists'
     elif response.status_code == 401:
@@ -557,8 +557,10 @@ def remove_device(device, device_id_only=False):
 
     #RETURN TRUE/FALSE BASED ON WHETHER WE GOT THE EXPECTED RETURN CODE
     if response.status_code == 204:
+        print('INFO: Successfully removed device', device)
         return True
     else:
+        print('INFO: Failed to remove device', device)
         return False
 
 
