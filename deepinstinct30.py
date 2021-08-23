@@ -877,3 +877,26 @@ def delete_tenant(tenant_name, msp_name):
     elif response.status_code == 409:
         print('ERROR: Tried to delete a tenant but active devices still exist!')
         return False
+
+def request_agent_logs(device_id):
+
+    #calculate URL and headers
+    request_url = f'https://{fqdn}/api/v1/devices/{device_id}/actions/upload-logs'
+    headers = {'Authorization': key, 'accept': 'application/json'}
+
+    # Send request to server
+    response = requests.post(request_url, headers=headers)
+
+    # Check return code and return Success or descriptive error
+    if response.status_code == 204:
+        print('INFO: Device', device_id, 'set to upload logs')
+        return True
+    elif response.status_code == 403:
+        print('WARN: Device', device_id, 'does not belong to connector’s msp')
+        return False
+    elif response.status_code == 404:
+        print('WARN: Device', device_id, 'not found')
+        return False
+    else:
+        print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url, 'with headers', headers)
+        return False
