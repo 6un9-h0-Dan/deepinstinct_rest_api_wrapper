@@ -1,9 +1,8 @@
 # Deep Instinct v3.0 REST API Wrapper
 # Patrick Van Zandt, Principal Professional Services Engineer, Deep Instinct
-# Last Updated: 2021-07-08
 #
 # Compatibility:
-# -Designed for and tested using Deep Instinct D-Appliance version 3.0.0.0
+# -Deep Instinct D-Appliance versions 3.0.x, 3.1.x, and 3.2.x
 # -Written and tested using a Python 3.8.3 instance installed by Anaconda
 #
 # Suggested Usage:
@@ -900,3 +899,61 @@ def request_agent_logs(device_id):
     else:
         print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url, 'with headers', headers)
         return False
+
+def close_events(event_id_list, open=False):
+
+    #calculate URL, headers, and payload
+    if open:
+        request_url = f'https://{fqdn}/api/v1/events/actions/open'
+    else:
+        request_url = f'https://{fqdn}/api/v1/events/actions/close'
+    headers = {'Authorization': key,
+                'accept': 'application/json',
+                'Content-Type': 'application/json'}
+    payload = {'ids': event_id_list}
+
+    # Send request to server
+    response = requests.post(request_url, json=payload, headers=headers)
+
+    # Check return code and return Success or descriptive error
+    if response.status_code == 204:
+        if open:
+            print('INFO:', len(event_id_list), 'events were opened')
+        else:
+            print('INFO:', len(event_id_list), 'events were closed')
+        return True
+    else:
+        print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url)
+        return False
+
+def open_events(event_id_list):
+    return close_events(event_id_list=event_id_list, open=True)
+
+def archive_events(event_id_list, unarchive=False):
+
+    #calculate URL, headers, and payload
+    if unarchive:
+        request_url = f'https://{fqdn}/api/v1/events/actions/unarchive'
+    else:
+        request_url = f'https://{fqdn}/api/v1/events/actions/archive'
+    headers = {'Authorization': key,
+                'accept': 'application/json',
+                'Content-Type': 'application/json'}
+    payload = {'ids': event_id_list}
+
+    # Send request to server
+    response = requests.post(request_url, json=payload, headers=headers)
+
+    # Check return code and return Success or descriptive error
+    if response.status_code == 204:
+        if unarchive:
+            print('INFO: Successfully unarchived up to ', len(event_id_list), 'events')
+        else:
+            print('INFO: Successfully archived up to ', len(event_id_list), 'events')
+        return True
+    else:
+        print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url)
+        return False
+
+def unarchive_events(event_id_list):
+    return archive_events(event_id_list=event_id_list, unarchive=True)
