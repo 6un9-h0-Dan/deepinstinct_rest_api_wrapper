@@ -208,7 +208,7 @@ def enable_upgrades(platforms=['WINDOWS','MAC'], automatic_upgrade=True, return_
                 # If yes, set it to desired setting
                 policy_data['data']['automatic_upgrade'] = automatic_upgrade
                 # Write modified policy data back to server (saving change)
-                request = requests.put(request_url, json=policy_data, headers=headers)
+                response = requests.put(request_url, json=policy_data, headers=headers)
                 # Increment the counter of how many policies we have modified
                 modified_policy_counter += 1
                 modified_policies_id_list.append(policy['id'])
@@ -390,7 +390,7 @@ def remove_devices_from_group(device_ids, group_id):
 
 
 # Collect and return list of Device Policies.
-def get_policies(include_policy_data=False, include_allow_deny_lists=False, keep_data_encapsulated=False):
+def get_policies(include_policy_data=False, include_allow_deny_lists=False, keep_data_encapsulated=False, msp_id='ALL'):
     # GET POLICIES (basic data only)
 
     # Calculate headers and URL
@@ -400,6 +400,14 @@ def get_policies(include_policy_data=False, include_allow_deny_lists=False, keep
     # Get data, convert to Python list
     response = requests.get(request_url, headers=headers)
     policies = response.json()
+
+    # Apply filter based on msp, if enabled
+    if msp_id != 'ALL':
+        filtered_policies = []
+        for policy in policies:
+            if policy['msp_id'] == msp_id:
+                filtered_policies.append(policy)
+        policies = filtered_policies
 
     # APPEND POLICY DATA (IF ENABLED)
     if include_policy_data:
