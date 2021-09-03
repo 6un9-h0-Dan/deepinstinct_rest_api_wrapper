@@ -13,11 +13,8 @@ import requests, base64, json, urllib3
 #Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#Variable to store the IP address or FQDN of the file scanning server
-connector_ip_address = ''
-
 #Primary method which accepts file name and optional config data, submits scan, simplifies it, and returns result
-def scan_file(file_name, scanner_ip=connector_ip_address, simplified=False, encoded=False):
+def scan_file(file_name, scanner_ip, simplified=False, encoded=False):
 
     # read file from disk (rb means opens the file in binary format for reading)
     with open(file_name, 'rb') as f:
@@ -52,7 +49,7 @@ def scan_file(file_name, scanner_ip=connector_ip_address, simplified=False, enco
 
 
 #Wrapper which invokes scan_file with the parameter to use encoding
-def scan_file_encoded(file_name, scanner_ip=connector_ip_address, simplified=False):
+def scan_file_encoded(file_name, scanner_ip, simplified=False):
     return scan_file(file_name=file_name, scanner_ip=scanner_ip, simplified=simplified, encoded=True)
 
 
