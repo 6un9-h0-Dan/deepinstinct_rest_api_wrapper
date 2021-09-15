@@ -10,7 +10,7 @@
 import deepinstinctagentless as di, time, json
 
 #CONFIGURATION
-di.agentless_connector = '192.168.0.50'
+scanner_ip = '192.168.0.50'
 file_to_scan = 'example.pdf'
 number_of_scans = 5000
 
@@ -22,7 +22,7 @@ total_file_size_in_bytes = 0
 
 # EXECUTE THE SCANS
 while n < number_of_scans:
-    verdict = di.scan_file(file_to_scan)
+    verdict = di.scan_file(file_to_scan, scanner_ip)
     total_scan_duration_in_microseconds += verdict['scan_duration_in_microseconds']
     total_file_size_in_bytes += verdict['file_size_in_bytes']
     n += 1
