@@ -965,3 +965,53 @@ def archive_events(event_id_list, unarchive=False):
 
 def unarchive_events(event_id_list):
     return archive_events(event_id_list=event_id_list, unarchive=True)
+
+
+# Disable scanning and enforcement on a device
+def disable_device(device, device_id_only=False):
+
+    #PROCESS INPUT
+    if device_id_only:
+        #the input was the actual device id
+        device_id = device
+    else:
+        #the input was a device dictionary; extract the device id from it
+        device_id = device['id']
+
+    #DISABLE THE DEVICE
+    request_url = f'https://{fqdn}/api/v1/devices/{device_id}/actions/disable'
+    headers = {'Authorization': key}
+    response = requests.post(request_url, headers=headers)
+
+    #RETURN TRUE/FALSE BASED ON WHETHER WE GOT THE EXPECTED RETURN CODE
+    if response.status_code == 204:
+        print('INFO: Successfully set device', device, 'to be disabled')
+        return True
+    else:
+        print('INFO: Failed to disable device', device)
+        return False
+
+
+# Enable scanning and enforcement on a device
+def enable_device(device, device_id_only=False):
+
+    #PROCESS INPUT
+    if device_id_only:
+        #the input was the actual device id
+        device_id = device
+    else:
+        #the input was a device dictionary; extract the device id from it
+        device_id = device['id']
+
+    #ENABLE THE DEVICE
+    request_url = f'https://{fqdn}/api/v1/devices/{device_id}/actions/enable'
+    headers = {'Authorization': key}
+    response = requests.post(request_url, headers=headers)
+
+    #RETURN TRUE/FALSE BASED ON WHETHER WE GOT THE EXPECTED RETURN CODE
+    if response.status_code == 204:
+        print('INFO: Successfully set device', device, 'to be enabled')
+        return True
+    else:
+        print('INFO: Failed to enable device', device)
+        return False
