@@ -261,7 +261,12 @@ def get_tenants():
 
     # Get data from server
     response = requests.get(request_url, headers=headers)
-    tenants = response.json()['tenants'] #convert to Python list, extract tenants
+
+    #check response code, parse JSON if valid
+    if response.status_code == 200:
+        tenants = response.json()['tenants']
+    else:
+        tenants = {'tenants': []}
 
     return tenants
 
@@ -488,8 +493,15 @@ def get_msps():
 
     # Get data from server
     response = requests.get(request_url, headers=headers)
-    msps = response.json()['msps']
 
+    #check response code, parse JSON if valid
+    if response.status_code == 200:
+        msps = response.json()['msps']
+    #in case of error, create empty list in place of msps
+    else:
+        msps = {'msps': []}
+
+    #return the MSPs data
     return msps
 
 
