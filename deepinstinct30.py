@@ -800,13 +800,17 @@ def delete_policy(policy_id):
         'on DELETE to', request_url)
         return False
 
-def export_events(minimum_event_id=0):
-    events = get_events(minimum_event_id=minimum_event_id)
+def export_events(minimum_event_id=0, suspicious=False):
+
+    events = get_events(minimum_event_id=minimum_event_id, suspicious=suspicious)
+
     if len(events) > 0:
         events_df = pandas.DataFrame(events)
         events_df.sort_values(by=['id'], inplace=True)
         folder_name = create_export_folder()
         file_name = f'events_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
+        if suspicious:
+            file_name = f'suspicious_{file_name}'
         events_df.to_excel(f'{folder_name}/{file_name}', index=False)
         print('INFO:', len(events), 'events were exported to disk as:', f'{folder_name}/{file_name}')
     else:
