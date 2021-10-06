@@ -1,14 +1,4 @@
-import pandas, datetime
-
-# Prompt use for D-Appliance Version, validate input, then import appropriate
-# version of the REST API Wrapper
-di_version = ''
-while di_version not in ['3.0', '2.5']:
-    di_version = input('DI Server Version [3.0 | 2.5]? ')
-if di_version == '3.0':
-    import deepinstinct30 as di
-else:
-    import deepinstinct25 as di
+import pandas, datetime, deepinstinct30 as di
 
 # Optional hardcoded config - if not provided, you'll be prompted at runtime
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
@@ -34,10 +24,7 @@ tenants = di.get_tenants()
 print('INFO: Getting MSP data from server')
 msps = di.get_msps()
 print('INFO: Getting Device data from server')
-if di_version == '2.5':
-    devices = di.get_devices()
-else:
-    devices = di.get_devices(include_deactivated=False)
+devices = di.get_devices(include_deactivated=False)
 
 # Look up MSP name for each tenant and add it to the tenants data
 print('INFO: Adding MSP names to Tenant data')
