@@ -43,7 +43,7 @@ def export_devices(include_deactivated=False):
     #calculate folder name
     folder_name = create_export_folder()
     #calculate file name
-    file_name = f'device_list_{timestamp}.xlsx'
+    file_name = f'device_list_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     #write data to disk
     devices_df.to_excel(f'{folder_name}/{file_name}', index=False)
     #return confirmation message
@@ -155,27 +155,27 @@ def export_policies(include_allow_deny_lists=True):
 
     folder_name = create_export_folder()
 
-    file_name = f'windows_policies_{timestamp}.xlsx'
+    file_name = f'windows_policies_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     windows_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
     print('INFO:', len(windows_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'mac_policies.xlsx_{timestamp}.xlsx'
+    file_name = f'mac_policies.xlsx_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     mac_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
     print('INFO:', len(mac_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'ios_policies.xlsx_{timestamp}.xlsx'
+    file_name = f'ios_policies.xlsx_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     ios_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
     print('INFO:', len(ios_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'android_policies_{timestamp}.xlsx'
+    file_name = f'android_policies_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     android_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
     print('INFO:', len(android_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'chrome_policies_{timestamp}.xlsx'
+    file_name = f'chrome_policies_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     chrome_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
     print('INFO:', len(chrome_policies), 'policies written to', f'{folder_name}/{file_name}')
 
-    file_name = f'network_agentless_policies_{timestamp}.xlsx'
+    file_name = f'network_agentless_policies_{timestamp}_{fqdn.split(".",1)[0]}.xlsx'
     network_agentless_policies_df.to_excel(f'{folder_name}/{file_name}', index=False)
     print('INFO:', len(network_agentless_policies), 'policies written to', f'{folder_name}/{file_name}')
 
@@ -811,10 +811,11 @@ def export_events(minimum_event_id=0, suspicious=False, flatten_device_info=True
         events_df = pandas.DataFrame(events)
         events_df.sort_values(by=['id'], inplace=True)
         folder_name = create_export_folder()
-        file_name = f'events_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
+        file_name = f'events_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}_{fqdn.split(".",1)[0]}.xlsx'
         if suspicious:
             file_name = f'suspicious_{file_name}'
-        events_df.to_excel(f'{folder_name}/{file_name}', index=False)
+        columns = ['id', 'status', 'action', 'type', 'trigger', 'threat_severity', 'file_hash', 'file_archive_hash', 'path', 'timestamp', 'insertion_timestamp', 'close_timestamp', 'close_trigger', 'last_reoccurrence', 'reoccurrence_count', 'last_action', 'device_id', 'recorded_device_info.os', 'recorded_device_info.mac_address', 'recorded_device_info.hostname', 'recorded_device_info.tag', 'recorded_device_info.group_name', 'recorded_device_info.policy_name', 'recorded_device_info.tenant_name', 'comment', 'mitre_classifications', 'file_size', 'file_status', 'sandbox_status', 'msp_name', 'msp_id', 'tenant_name', 'tenant_id']
+        events_df.to_excel(f'{folder_name}/{file_name}', index=False, sheet_name='Event_Data', columns=columns)
         print('INFO:', len(events), 'events were exported to disk as:', f'{folder_name}/{file_name}')
     else:
         print('WARNING: No events were found on the server')
@@ -823,7 +824,7 @@ def export_groups(exclude_default_groups=False):
     groups = get_groups(exclude_default_groups=exclude_default_groups)
     groups_df = pandas.DataFrame(groups)
     folder_name = create_export_folder()
-    file_name = f'groups_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}.xlsx'
+    file_name = f'groups_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}_{fqdn.split(".",1)[0]}.xlsx'
     groups_df.to_excel(f'{folder_name}/{file_name}', index=False)
 
 
@@ -1034,3 +1035,37 @@ def enable_device(device, device_id_only=False):
     else:
         print('INFO: Failed to enable device', device)
         return False
+
+def export_event_count_by_device_id(minimum_event_id=0, event_filters={}):
+
+    #get event data from server
+    events = get_events(minimum_event_id=minimum_event_id, search=event_filters)
+
+    #convert to PivotTable style summary of event count by device id
+    event_counts = count_data_by_field(events, 'device_id')
+
+    #above returns a dictionary; the syntax below flattens this into a 2-column dataframe
+    event_counts_df = pandas.DataFrame(list(event_counts.items()),columns = ['device_id','event_count'])
+
+    #sort data with highest event count on top
+    event_counts_df.sort_values(by=['event_count'], ascending=False, inplace=True)
+
+    #calculate (and create if necessary) export folder and file name
+    folder_name = create_export_folder()
+    file_name = f'event_count_by_device_id_{datetime.datetime.today().strftime("%Y-%m-%d_%H.%M")}_{fqdn.split(".",1)[0]}.xlsx'
+
+    #write data to disk
+    event_counts_df.to_excel(f'{folder_name}/{file_name}', index=False, sheet_name='Event_Counts')
+    print('INFO: event counts were exported to disk as:', f'{folder_name}/{file_name}')
+
+    #return event_counts in case needed for further analysis in another method
+    return event_counts
+
+def count_data_by_field(data, field_name):
+    result = {}
+    for record in data:
+        if record[field_name] in result.keys():
+            result[record[field_name]] += 1
+        else:
+            result[record[field_name]] = 1
+    return result
