@@ -800,11 +800,14 @@ def delete_policy(policy_id):
         'on DELETE to', request_url)
         return False
 
-def export_events(minimum_event_id=0, suspicious=False):
+def export_events(minimum_event_id=0, suspicious=False, flatten_device_info=True):
 
     events = get_events(minimum_event_id=minimum_event_id, suspicious=suspicious)
 
     if len(events) > 0:
+        if flatten_device_info:
+            #flattens recorded_device_info into discreet columns. Examples: recorded_device_info.hostname, recorded_device_info.policy_name
+            events = pandas.json_normalize(events)
         events_df = pandas.DataFrame(events)
         events_df.sort_values(by=['id'], inplace=True)
         folder_name = create_export_folder()
