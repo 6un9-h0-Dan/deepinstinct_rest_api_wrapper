@@ -5,8 +5,8 @@
 # then iterates through them and finds ones that match your defined criteria
 # for identifying offline non-persistent VDI devices which are consuming a
 # license. When matches are found, it then requests an uninstall of those
-# devices. This results in the Deployment moving to Pending Uninstall, which
-# immediately releases the license(s) consumed.
+# devices. This results in the Deployment Status on those devices moving to
+# Pending Uninstall, which immediately releases the license(s) consumed.
 
 import deepinstinct30 as di, datetime
 
