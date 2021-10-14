@@ -1,6 +1,6 @@
 # non_persistent_vdi_cleanup.py
 #
-# This example script is could be run on a recurring basis (suggest 1X daily)
+# This example script should be run on a recurring basis (suggest 1X daily)
 # using a scheduling tool of your choice. It queries the server for devices,
 # then iterates through them and finds ones that match your defined criteria
 # for identifying offline non-persistent VDI devices which are consuming a
