@@ -1,26 +1,18 @@
-# Disclaimer:
-# This code is provided as an example of how to build code against and interact
-# with the Deep Instinct REST API. It is provided AS-IS/NO WARRANTY. It has
-# limited error checking and logging, and likely contains defects or other
-# deficiencies. Test thoroughly first, and use at your own risk. The API
-# Wrapper and associated samples are not Deep Instinct commercial products and
-# are not officially supported, although he underlying REST API is. This means
-# that to report an issue to tech support you must remove the API Wrapper layer
-# and recreate the problem with a reproducible test case against the raw/pure
-# DI REST API.
+# non_persistent_vdi_cleanup.py
 #
+# This example script is could be run on a recurring basis (suggest 1X daily)
+# using a scheduling tool of your choice. It queries the server for devices,
+# then iterates through them and finds ones that match your defined criteria
+# for identifying offline non-persistent VDI devices which are consuming a
+# license. When matches are found, it then requests an uninstall of those
+# devices. This results in the Deployment moving to Pending Uninstall, which
+# immediately releases the license(s) consumed.
 
-import deepinstinct25 as di, datetime
+import deepinstinct30 as di, datetime
 
-# Optional hardcoded config - if not provided, you'll be prompted at runtime
+# Server configuration
 di.fqdn = 'SERVER-NAME.customers.deepinstinctweb.com'
 di.key = 'API-KEY'
-
-# Validate config and prompt if not provided above
-while di.fqdn == '' or di.fqdn == 'SERVER-NAME.customers.deepinstinctweb.com':
-    di.fqdn = input('FQDN of DI Server? ')
-while len(di.key) != 257:
-    di.key = input('API Key? ')
 
 # Get device data from DI server
 devices = di.get_devices()
@@ -59,3 +51,17 @@ for device in devices_to_remove:
         print(device['id'], device['hostname'], 'was successfully removed')
     else:
         print('Failed to remove', device['id'], device['hostname'])
+
+
+
+# Disclaimer:
+# This code is provided as an example of how to build code against and interact
+# with the Deep Instinct REST API. It is provided AS-IS/NO WARRANTY. It has
+# limited error checking and logging, and likely contains defects or other
+# deficiencies. Test thoroughly first, and use at your own risk. The API
+# Wrapper and associated samples are not Deep Instinct commercial products and
+# are not officially supported, although he underlying REST API is. This means
+# that to report an issue to tech support you must remove the API Wrapper layer
+# and recreate the problem with a reproducible test case against the raw/pure
+# DI REST API.
+#
