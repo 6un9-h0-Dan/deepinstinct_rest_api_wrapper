@@ -25,6 +25,8 @@
 # problem against the raw/pure DI REST API.
 #
 
+debug_mode = False
+
 # Import various libraries used by one or more method below.
 import requests, json, datetime, pandas, re, ipaddress, time, os
 #If any of the above throw import errors, try running 'pip install library_name'
@@ -607,6 +609,10 @@ def get_events(search={}, minimum_event_id=0, suspicious=False):
 
         #make request to server, store response
         response = requests.post(request_url, headers=headers, json=search)
+
+        if debug_mode:
+            print(request_url, '\n returned', response.status_code)
+
         #check HTTP return code, and in case of error exit the method and return empty list
         if response.status_code != 200:
             return []
@@ -1036,13 +1042,23 @@ def enable_device(device, device_id_only=False):
         print('INFO: Failed to enable device', device)
         return False
 
-def export_event_count_by_device_id(minimum_event_id=0, event_filters={}):
+
+def get_event_counts_by_device_id(minimum_event_id=0, event_filters={}):
 
     #get event data from server
     events = get_events(minimum_event_id=minimum_event_id, search=event_filters)
 
     #convert to PivotTable style summary of event count by device id
     event_counts = count_data_by_field(events, 'device_id')
+
+    #return the data
+    return event_counts
+
+
+def export_event_count_by_device_id(minimum_event_id=0, event_filters={}):
+
+    #get events counts
+    event_counts = get_event_counts_by_device_id(minimum_event_id=minimum_event_id, event_filters=event_filters)
 
     #above returns a dictionary; the syntax below flattens this into a 2-column dataframe
     event_counts_df = pandas.DataFrame(list(event_counts.items()),columns = ['device_id','event_count'])
@@ -1069,3 +1085,29 @@ def count_data_by_field(data, field_name):
         else:
             result[record[field_name]] = 1
     return result
+
+def is_prevention_policy(policy):
+    if policy['os'] == 'WINDOWS':
+        if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH'):
+            if policy['ransomware_behavior'] == 'PREVENT':
+                if policy['remote_code_injection'] == 'PREVENT':
+                    if policy['arbitrary_shellcode_execution'] == 'PREVENT':
+                        return True
+    elif 'prevention_level' in policy.keys():
+        if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH'):
+            return True
+    else:
+        return False
+
+def download_uploaded_file(file_hash):
+    headers = {'accept': 'application/json', 'Authorization': key}
+    request_url = f'https://{fqdn}/api/v1/events/actions/download-uploaded-file/{file_hash}'
+    response = requests.get(request_url, headers=headers)
+    if response.status_code == 200:
+        folder_name = create_export_folder()
+        file_name = f'{file_hash}.zip'
+        open(f'{folder_name}/{file_name}','wb').write(response.content)
+        return True
+    else:
+        print('ERROR: Unexpected status code', response.status_code, 'on GET', request_url)
+        return False
