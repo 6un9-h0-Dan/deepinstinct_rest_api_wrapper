@@ -1086,18 +1086,24 @@ def count_data_by_field(data, field_name):
             result[record[field_name]] = 1
     return result
 
-def is_prevention_policy(policy):
+def is_prevention_policy(policy, exclude_static_analysis=False, exclude_ransomware_behavior=False, exclude_remote_code_injection=False, exclude_arbritrary_shallcode_execution=False):
+
+    verdict = False #start with false until proven otherwise
+
+    #For windows, require that all [currently exposed] features that Best Practices call for general usage be in prevention
     if policy['os'] == 'WINDOWS':
-        if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH'):
-            if policy['ransomware_behavior'] == 'PREVENT':
-                if policy['remote_code_injection'] == 'PREVENT':
-                    if policy['arbitrary_shellcode_execution'] == 'PREVENT':
-                        return True
+        if policy['prevention_level'] in ('LOW', 'MEDIUM') or exclude_static_analysis:
+            if policy['ransomware_behavior'] == 'PREVENT' or exclude_ransomware_behavior:
+                if policy['remote_code_injection'] == 'PREVENT' or exclude_remote_code_injection:
+                    if policy['arbitrary_shellcode_execution'] == 'PREVENT' or exclude_arbritrary_shallcode_execution:
+                        verdict = True
+
+    #This covers all non-Windows platforms that have a prevention threshold (current and future)
     elif 'prevention_level' in policy.keys():
-        if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH'):
-            return True
-    else:
-        return False
+        if policy['prevention_level'] in ('LOW', 'MEDIUM', 'HIGH') or exclude_static_analysis:
+            verdict = True
+
+    return verdict
 
 def download_uploaded_file(file_hash):
     headers = {'accept': 'application/json', 'Authorization': key}
