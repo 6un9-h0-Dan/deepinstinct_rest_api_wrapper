@@ -1117,3 +1117,23 @@ def download_uploaded_file(file_hash):
     else:
         print('ERROR: Unexpected status code', response.status_code, 'on GET', request_url)
         return False
+
+def request_malware_sample(event_id):
+
+    #calculate URL and headers
+    headers = {'accept': 'application/json', 'Authorization': key}
+    request_url = f'https://{fqdn}/api/v1/devices/actions/request-remote-file-upload/{event_id}'
+
+    # Send request to server
+    response = requests.post(request_url, headers=headers)
+
+    # Check return code and return Success or descriptive error
+    if response.status_code == 204:
+        print('INFO: Upload of malware sample for event', event_id, 'successfully queued')
+        return True
+    elif response.status_code == 404:
+        print('WARN: Event', event_id, 'not found')
+        return False
+    else:
+        print('ERROR: Unexpected return code', response.status_code, 'on POST to', request_url, 'with headers', headers)
+        return False
