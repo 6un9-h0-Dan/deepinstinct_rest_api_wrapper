@@ -14,7 +14,7 @@ import requests, base64, json, urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 #Primary method which accepts file name and optional config data, submits scan, simplifies it, and returns result
-def scan_file(file_name, scanner_ip, simplified=False, encoded=False):
+def scan_file(file_name, scanner_ip, simplified=False, encoded=False, scanner_port=5000):
 
     # read file from disk (rb means opens the file in binary format for reading)
     with open(file_name, 'rb') as f:
@@ -26,10 +26,10 @@ def scan_file(file_name, scanner_ip, simplified=False, encoded=False):
     if encoded:
         #encode data and set URL to match
         data = base64.b64encode(data)
-        request_url = f'https://{scanner_ip}:5000/scan/base64'
+        request_url = f'https://{scanner_ip}:{scanner_port}/scan/base64'
     else:
         #leave data as-is and set URL to match
-        request_url = f'https://{scanner_ip}:5000/scan/binary'
+        request_url = f'https://{scanner_ip}:{scanner_port}/scan/binary'
 
     # send scan request, capture response
     response = requests.post(request_url, data=data, timeout=20, verify=False)

@@ -911,7 +911,10 @@ def delete_tenant(tenant_name, msp_name):
         print('ERROR: Tried to delete a tenant but active devices still exist!')
         return False
 
-def request_agent_logs(device_id):
+def request_agent_logs(device_id, device_id_only=True):
+
+    if not device_id_only:
+        device_id = device_id['id']
 
     #calculate URL and headers
     request_url = f'https://{fqdn}/api/v1/devices/{device_id}/actions/upload-logs'
